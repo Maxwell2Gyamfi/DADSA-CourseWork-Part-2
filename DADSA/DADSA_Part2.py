@@ -8,22 +8,22 @@ class Item():
 
     #default constructor
     def __init__(self,item_number=None,itemDescription=None,
-                  item_price=None,itemShape = None,itemWeigth =None):
+                  item_price=None,itemShape = None,itemWeight =None):
 
         self.itemNumber = item_number
         self.itemDescription =itemDescription
         self.itemPrice = item_price
         self.itemShape = itemShape
-        self.itemWeigth = itemWeigth
+        self.itemWeight = itemWeight
  
    
     def __str__(self):
         return "%-8s  %-45s £%-10s %-10s %s "%(self.itemNumber,self.itemDescription,self.itemPrice,
-                                          self.itemShape,self.itemWeigth)
+                                          self.itemShape,self.itemWeight)
     
     def __repr__(self):
         return "%s %s %s %s %s"%(self.itemNumber,self.itemDescription,self.itemPrice,
-                                         self.itemShape,self.itemWeigth)
+                                         self.itemShape,self.itemWeight)
 
 class Warehouse(object):
 
@@ -41,7 +41,7 @@ class Warehouse(object):
 
              if(warehouseItem.itemShape == i.shapeName):
                 if(self.remainingInsurance > warehouseItem.itemPrice):
-                  if i.storageQuantity > 0 and i.storageWeigth >= warehouseItem.itemWeigth:
+                  if i.storageQuantity > 0 and i.storageWeight >= warehouseItem.itemWeight:
                       self.warehouseItems.append(warehouseItem)
                       i.decreaseStorageWeigth()
                       self.decreaseWarehouseInsurance(warehouseItem.itemPrice)
@@ -96,8 +96,8 @@ class Warehouse(object):
         for i in self.warehouseItems:
             print(i)
 
-    def addShape(self,shapeName,weigth,quantity):
-        temp = storageShapes(shapeName,weigth,quantity) 
+    def addShape(self,shapeName,weight,quantity):
+        temp = storageShapes(shapeName,weight,quantity) 
         self.warehouseShapes.append(temp)
 
     def increaseWarehouseInsurance(self,amount):
@@ -122,9 +122,9 @@ class Warehouse(object):
 
 class storageShapes():
     
-    def __init__(self,shapeName=None,storageWeigth=None,storageQuantity=None):
+    def __init__(self,shapeName=None,storageWeight=None,storageQuantity=None):
         self.shapeName = shapeName
-        self.storageWeigth = storageWeigth
+        self.storageWeight = storageWeight
         self.storageQuantity = storageQuantity
     
     def decreaseStorageWeigth(self):
@@ -134,10 +134,10 @@ class storageShapes():
         self.storageQuantity+=1
         
     def __str__(self):
-         return "%s %s %s"%(self.shapeName,self.storageWeigth,self.storageQuantity)
+         return "%s %s %s"%(self.shapeName,self.storageWeight,self.storageQuantity)
 
     def __repr__(self):
-        return "%s %s %s"%(self.shapeName,self.storageWeigth,self.storageQuantity)
+        return "%s %s %s"%(self.shapeName,self.storageWeight,self.storageQuantity)
 
 def setValues(warehouse,selectedWarehouse):
 
@@ -179,8 +179,12 @@ def createWarehouses():
 def main():
 
     global Warehouses
+    Warehouses = []
     menuChoice = 0
-    while(menuChoice!=5):
+    Warehouses = createWarehouses()
+    readcsvFiletoWarehouse(Warehouses)
+
+    while(menuChoice!=5):     
         mainMenu()
         menuChoice = getValidInteger(1,5)
         menuSelection(menuChoice,Warehouses)
@@ -189,45 +193,39 @@ def main():
 
 def readcsvFiletoWarehouse(Warehouses):
 
-    tempWarehouse = Warehouse("temp",2000000000)
-    createTempWarehouse(tempWarehouse)
-
     loadcsv('Warehouse A.csv',Warehouses[0])
     loadcsv('Warehouse B.csv',Warehouses[1])
     loadcsv('Warehouse C.csv',Warehouses[2])
     loadcsv('Warehouse D.csv',Warehouses[3])
-    loadcsv('DATA TO INSERT INTO WAREHOUSE A.csv',tempWarehouse)
     
-    loadItemsToWarehouseA(tempWarehouse,Warehouses)
-    input()
-
 def mainMenu():
 
+    os.system('cls')
     print("            MAIN MENU")
     print("            ---------\n")
-
-    print("1 --> Task 1")
-    print("2 --> Task 2")
-    print("3 --> Task 3")
-    print("4 --> Task 4")
-    print("5 --> Quit")
+    print("     1 --> Task 1")
+    print("     2 --> Task 2")
+    print("     3 --> Task 3")
+    print("     4 --> Task 4")
+    print("     5 --> Quit")
     print("\nSelect choice(1-5): ")
 
 def menuSelection(menuChoice,Warehouses):
 
-    if(choice ==1):       
-       Warehouses = createWarehouses()
-       readcsvFiletoWarehouse(Warehouses)
-       task1Menu()
-       
+    while(menuChoice!=3):
+        if(menuChoice ==1):                 
+           task1Menu()
+           task1MenuSelection = getValidInteger(1,3)
+           task1MenuChoice(task1MenuSelection,Warehouses)
 
     return 
 
-def displayWarehouses():
+def displayWarehouses(Warehouses):
     
+    os.system('cls')
     print("            DISPLAY WAREHOUSES")
     print("            -----------------\n")
-
+    allWarehousesDetails(Warehouses)
     print("1 --> A")
     print("2 --> B")
     print("3 --> C")
@@ -235,25 +233,48 @@ def displayWarehouses():
     print("5 --> Quit")
     print("\nSelect choice(1-5): ")
 
+def allWarehousesDetails(Warehouses):
+
+        print("\nWAREHOUSES INFORMATION: ")
+        print("----------------------")
+        print("\nWarehouse Name       Total Elements    Remaing Insurance   Remaining Shapes")
+        print("--------------       -------------     -----------------   ----------------")
+        
+        for i in range(0,len(Warehouses)):
+            print("%-20s %-17s %-19s %s"%
+                  (Warehouses[i].warehouseName,
+                   len(Warehouses[i].warehouseItems),
+                   Warehouses[i].remainingInsurance,
+                   Warehouses[i].warehouseShapes))
+        print("\n")
+
 def task1Menu():
 
+    os.system('cls')
     print("         TASK 1")
     print("         ------")
-
     print("1 --> Display Warehouses")
     print("2 --> Load task 1 csv to Warehouse A")
     print("3 --> Quit")
     print("\nSelect choice(1-3): ")
 
-def task1MenuChoice(menuChoice):
+def task1MenuChoice(menuChoice,Warehouses):
 
-    if choice == 1:
-       displayWarehouses()
+    task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
+    if menuChoice == 1:
+       displayWarehouses(Warehouses)
        warehouseChoice = getValidInteger(1,5)
-       if choice ==5:
-           return 
-       else:
-           Warehouses[choice-1].displayWarehouse()
+       if menuChoice !=5:
+           Warehouses[warehouseChoice-1].displayWarehouse()
+    elif menuChoice ==2:
+          if task1MenuChoice.itemsLoaded == False:
+              tempWarehouse = Warehouse("temp",2000000000)
+              createTempWarehouse(tempWarehouse)         
+              task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
+          else:
+              print("Data Loaded into warehouses already")
+               
+    input("Press any key to continue") 
     return
 
 def createTempWarehouse(tempWarehouse):
@@ -262,11 +283,11 @@ def createTempWarehouse(tempWarehouse):
     tempWarehouse.addShape('Square',2000,10)
     tempWarehouse.addShape('Sphere',2000,10)
     tempWarehouse.addShape('Pyramid',2000,10)
+    loadcsv('DATA TO INSERT INTO WAREHOUSE A.csv',tempWarehouse)
 
 def loadItemsToWarehouseA(tempWarehouse,Warehouses):
 
     itemAdded = True
-
     os.system('cls')
     print("\n")
     print("    Load Items through Warehouse A'")
@@ -277,7 +298,7 @@ def loadItemsToWarehouseA(tempWarehouse,Warehouses):
             itemAdded = Warehouses[j].addItem(tempWarehouse.warehouseItems[i],False)
             if itemAdded == True:                
                 break        
-    return
+    return True
 
 def loadcsv(csvFilename,selectedWarehouse):
     try:
@@ -290,6 +311,7 @@ def loadcsv(csvFilename,selectedWarehouse):
     except FileNotFoundError:
           print(FileNotFoundError)
     return
+
 def getValidInteger(minimum,maximum):
 
         #sets flag
