@@ -214,6 +214,7 @@ def mainMenu():
     print("\nSelect choice(1-5): ")
 
 def menuSelection(menuChoice,Warehouses):
+
     if(choice ==1):       
        Warehouses = createWarehouses()
        readcsvFiletoWarehouse(Warehouses)
