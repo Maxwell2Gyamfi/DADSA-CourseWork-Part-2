@@ -178,12 +178,13 @@ def createWarehouses():
 
 def main():
 
-    global Warehouses    
-    Warehouses = createWarehouses()
-    readcsvFiletoWarehouse(Warehouses)
-    Warehouses[0].displayWarehouse()
-
-  
+    global Warehouses
+    menuChoice = 0
+    while(menuChoice!=5):
+        mainMenu()
+        menuChoice = getValidInteger(1,5)
+        menuSelection(menuChoice,Warehouses)
+       
     return
 
 def readcsvFiletoWarehouse(Warehouses):
@@ -200,6 +201,60 @@ def readcsvFiletoWarehouse(Warehouses):
     loadItemsToWarehouseA(tempWarehouse,Warehouses)
     input()
 
+def mainMenu():
+
+    print("            MAIN MENU")
+    print("            ---------\n")
+
+    print("1 --> Task 1")
+    print("2 --> Task 2")
+    print("3 --> Task 3")
+    print("4 --> Task 4")
+    print("5 --> Quit")
+    print("\nSelect choice(1-5): ")
+
+def menuSelection(menuChoice,Warehouses):
+    if(choice ==1):       
+       Warehouses = createWarehouses()
+       readcsvFiletoWarehouse(Warehouses)
+       task1Menu()
+       
+
+    return 
+
+def displayWarehouses():
+    
+    print("            DISPLAY WAREHOUSES")
+    print("            -----------------\n")
+
+    print("1 --> A")
+    print("2 --> B")
+    print("3 --> C")
+    print("4 --> D")
+    print("5 --> Quit")
+    print("\nSelect choice(1-5): ")
+
+def task1Menu():
+
+    print("         TASK 1")
+    print("         ------")
+
+    print("1 --> Display Warehouses")
+    print("2 --> Load task 1 csv to Warehouse A")
+    print("3 --> Quit")
+    print("\nSelect choice(1-3): ")
+
+def task1MenuChoice(menuChoice):
+
+    if choice == 1:
+       displayWarehouses()
+       warehouseChoice = getValidInteger(1,5)
+       if choice ==5:
+           return 
+       else:
+           Warehouses[choice-1].displayWarehouse()
+    return
+
 def createTempWarehouse(tempWarehouse):
 
     tempWarehouse.addShape('Rectangle',2000,10)
@@ -213,8 +268,8 @@ def loadItemsToWarehouseA(tempWarehouse,Warehouses):
 
     os.system('cls')
     print("\n")
-    print("    TASK A 'Load Items through Warehouse A'")
-    print("    ---------------------------------------\n")
+    print("    Load Items through Warehouse A'")
+    print("    ------------------------------\n")
 
     for i in range(0,len(tempWarehouse.warehouseItems)):
         for j in range(0,4):
@@ -234,5 +289,24 @@ def loadcsv(csvFilename,selectedWarehouse):
     except FileNotFoundError:
           print(FileNotFoundError)
     return
+def getValidInteger(minimum,maximum):
+
+        #sets flag
+        flag =True
+        while flag == True:
+             number= input("")
+             #checks if input is valid integer
+             try:
+                if number.isdigit:
+                   number = int(number)
+             except ValueError:
+                   print('You didnt input an input an integer,try again: (%d-%d))' % (minimum,maximum))
+             else:
+                 #checks if input is out of range
+                 if number < minimum or number >maximum:
+                    print('The entered number is out of range, try again: (%d-%d))' % (minimum,maximum))
+                 else:
+                    flag = False       
+        return number
 
 main()
