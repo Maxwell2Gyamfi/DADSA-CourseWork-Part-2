@@ -7,22 +7,22 @@ class Item():
 
 
     #default constructor
-    def __init__(self,item_number=None,item_description=None,
+    def __init__(self,item_number=None,itemDescription=None,
                   item_price=None,itemShape = None,itemWeigth =None):
 
         self.itemNumber = item_number
-        self.item_description =item_description
+        self.itemDescription =itemDescription
         self.itemPrice = item_price
         self.itemShape = itemShape
         self.itemWeigth = itemWeigth
  
    
     def __str__(self):
-        return "%-8s  %-45s £%-10s %-10s %s "%(self.itemNumber,self.item_description,self.itemPrice,
+        return "%-8s  %-45s £%-10s %-10s %s "%(self.itemNumber,self.itemDescription,self.itemPrice,
                                           self.itemShape,self.itemWeigth)
     
     def __repr__(self):
-        return "%s %s %s %s %s"%(self.itemNumber,self.item_description,self.itemPrice,
+        return "%s %s %s %s %s"%(self.itemNumber,self.itemDescription,self.itemPrice,
                                          self.itemShape,self.itemWeigth)
 
 class Warehouse(object):
@@ -41,7 +41,7 @@ class Warehouse(object):
 
              if(warehouseItem.itemShape == i.shapeName):
                 if(self.remainingInsurance > warehouseItem.itemPrice):
-                  if i.storagequantity > 0 and i.storageWeigth >= warehouseItem.itemWeigth:
+                  if i.storageQuantity > 0 and i.storageWeigth >= warehouseItem.itemWeigth:
                       self.warehouseItems.append(warehouseItem)
                       i.decreaseStorageWeigth()
                       self.decreaseWarehouseInsurance(warehouseItem.itemPrice)
@@ -100,7 +100,7 @@ class Warehouse(object):
         temp = storageShapes(shapeName,weigth,quantity) 
         self.warehouseShapes.append(temp)
 
-    def increaseWarehouse_insurance(self,amount):
+    def increaseWarehouseInsurance(self,amount):
         self.remainingInsurance+=amount
         Warehouse.overallInsurance+=amount
     
@@ -122,22 +122,22 @@ class Warehouse(object):
 
 class storageShapes():
     
-    def __init__(self,shapeName=None,storageWeigth=None,storagequantity=None):
+    def __init__(self,shapeName=None,storageWeigth=None,storageQuantity=None):
         self.shapeName = shapeName
         self.storageWeigth = storageWeigth
-        self.storagequantity = storagequantity
+        self.storageQuantity = storageQuantity
     
     def decreaseStorageWeigth(self):
-        self.storagequantity-=1
+        self.storageQuantity-=1
 
     def increaseStorageWeigth(self):
-        self.storagequantity+=1
+        self.storageQuantity+=1
         
     def __str__(self):
-         return "%s %s %s"%(self.shapeName,self.storageWeigth,self.storagequantity)
+         return "%s %s %s"%(self.shapeName,self.storageWeigth,self.storageQuantity)
 
     def __repr__(self):
-        return "%s %s %s"%(self.shapeName,self.storageWeigth,self.storagequantity)
+        return "%s %s %s"%(self.shapeName,self.storageWeigth,self.storageQuantity)
 
 def setValues(warehouse,selectedWarehouse):
 
