@@ -38,30 +38,24 @@ class Warehouse(object):
 
     def addItem(self,warehouseItem,loadFromCsv):
          for i in self.warehouseShapes:
-
              if(warehouseItem.itemShape == i.shapeName):
                 if(self.remainingInsurance > warehouseItem.itemPrice):
                   if i.storageQuantity > 0 and i.storageWeight >= warehouseItem.itemWeight:
                       self.warehouseItems.append(warehouseItem)
                       i.decreaseStorageWeigth()
                       self.decreaseWarehouseInsurance(warehouseItem.itemPrice)
-
                       if(loadFromCsv==False):
                           print("Item %s added to Warehouse %s"
                           %(warehouseItem.itemNumber,self.warehouseName))
-
                       return True
                   else:
-
                       print("Item rejected, item %s storage capacity exceeds warehouse %s capacity"
                             %(warehouseItem.itemNumber,self.warehouseName))
                       return False
                 else:
-
                     print("Item rejected, item %s value exceeds warehouse %s remaining insurance"
                           %(warehouseItem.itemNumber,self.warehouseName))
                     return False
-
          print("Item %s rejected, warehouse %s cannot accomodate %s item shapes"
                %(warehouseItem.itemNumber,self.warehouseName,i.shapeName))
          return False
@@ -77,6 +71,7 @@ class Warehouse(object):
         print("  ---> Available Shapes: %s"%(self.warehouseShapes))
         self.warehouseItems = self.insertionSort()
         self.printWarehouseItems()
+  
 
     def insertionSort(self):
         j=0   
@@ -156,7 +151,7 @@ def setupWarehouses(allWarehouses):
 
     warehouseShapes = []
     warehouseShapes.append([['Rectangle',1000,5],['Pyramid',2000,10],['Square',2000,5]])
-    warehouseShapes.append([['Rectangle',500,10],['Sphere',2000,2],['Pyramid',250,10]])
+    warehouseShapes.append([['Rectangle',500,10],['Sphere',2000,5],['Pyramid',250,10]])
     warehouseShapes.append([['Sphere',250,15],['Pyramid',500,5]])
     warehouseShapes.append([['Rectangle',500,10],['Sphere',750,2],['Pyramid',3000,2],['Square',750,10]])
 
