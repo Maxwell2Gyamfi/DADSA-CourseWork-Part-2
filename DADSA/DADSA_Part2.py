@@ -3,10 +3,52 @@ import os
 import pickle
 import copy
 
+class Node: 
+  
+    def __init__(self, data): 
+        self.data = data 
+        self.next = None
+
+    def __str__(self):
+        return "%s %s"%(self.data,self.next)
+
+    def __repr__(self):
+        return "%s %s"%(self.data,self.next)
+    
+class LinkedList: 
+  
+    def __init__(self): 
+        self.head = None
+
+    def push(self, new_data): 
+        new_node = Node(new_data) 
+        new_node.next = self.head 
+        self.head = new_node 
+    
+    def append(self, new_data): 
+        new_node = Node(new_data)   
+        if self.head is None: 
+            self.head = new_node 
+            return 
+        last = self.head 
+        while (last.next): 
+            last = last.next  
+        last.next = new_node 
+
+    def printList(self): 
+        temp = self.head 
+        while (temp): 
+            print(temp.data) 
+            temp = temp.next
+
+    def __str__(self):
+        return "%s"%(self.head)
+
+    def __repr__(self):
+        return "%s"%(self.head)
+
 class Item():
 
-
-    #default constructor
     def __init__(self,item_number=None,itemDescription=None,
                   item_price=None,itemShape = None,itemWeight =None):
 
@@ -15,8 +57,7 @@ class Item():
         self.itemPrice = item_price
         self.itemShape = itemShape
         self.itemWeight = itemWeight
- 
-   
+  
     def __str__(self):
         return "%-8s  %-45s £%-10s %-10s %s "%(self.itemNumber,self.itemDescription,self.itemPrice,
                                           self.itemShape,self.itemWeight)
@@ -207,13 +248,15 @@ def mainMenu():
 
 def menuSelection(menuChoice,Warehouses):
 
-    while(menuChoice!=3):
-        if(menuChoice ==1):                 
+        if menuChoice ==1:                 
            task1Menu()
-           task1MenuSelection = getValidInteger(1,3)
-           task1MenuChoice(task1MenuSelection,Warehouses)
-
-    return 
+           taskMenuSelection = getValidInteger(1,3)
+           task1MenuChoice(taskMenuSelection,Warehouses)
+        elif menuChoice==2:
+           setupBinaryTree(Warehouses)
+           task2Menu()
+           taskMenuSelection = getValidInteger(1,3)
+           task2MenuChoice(taskMenuSelection,Warehouses)
 
 def displayWarehouses(Warehouses):
     
@@ -254,23 +297,46 @@ def task1Menu():
     print("\nSelect choice(1-3): ")
 
 def task1MenuChoice(menuChoice,Warehouses):
-
-    task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
-    if menuChoice == 1:
-       displayWarehouses(Warehouses)
-       warehouseChoice = getValidInteger(1,5)
-       if menuChoice !=5:
-           Warehouses[warehouseChoice-1].displayWarehouse()
-    elif menuChoice ==2:
-          if task1MenuChoice.itemsLoaded == False:
-              tempWarehouse = Warehouse("temp",2000000000)
-              createTempWarehouse(tempWarehouse)         
-              task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
-          else:
-              print("Data Loaded into warehouses already")
-               
+    while(menuChoice!=3):
+        task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
+        if menuChoice == 1:
+           displayWarehouses(Warehouses)
+           warehouseChoice = getValidInteger(1,5)
+           if  warehouseChoice !=5:
+               Warehouses[warehouseChoice-1].displayWarehouse()
+        elif menuChoice ==2:
+              if task1MenuChoice.itemsLoaded == False:
+                  tempWarehouse = Warehouse("temp",2000000000)
+                  createTempWarehouse(tempWarehouse)         
+                  task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
+              else:
+                  print("Data Loaded into warehouses already")
+             
     input("Press any key to continue") 
     return
+
+def task2MenuChoice(menuChoice,Warehouses):
+     while(menuChoice!=3):
+       pass
+
+def setupBinaryTree(Warehouses):
+    
+    llist = LinkedList()
+    llist.append(Warehouses[0])
+    llist.append(Warehouses[1])
+    llist.append(Warehouses[2])
+    llist.append(Warehouses[3])
+    llist.printList()
+
+def task2Menu():
+
+    os.system('cls')
+    print("         TASK 1")
+    print("         ------")
+    print("1 --> Days to relocate items from task 2 csv.")
+    print("2 --> Days to relocate taking into consideration weight and value of each item.")
+    print("3 --> Quit")
+    print("\nSelect choice(1-3): ")
 
 def createTempWarehouse(tempWarehouse):
 
