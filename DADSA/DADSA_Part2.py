@@ -40,10 +40,17 @@ class LinkedList:
         while (temp): 
             print(temp.data) 
             temp = temp.next
+    def searchItem(self,itemNumber):
+        current = self.head     
+        while current != None:
+            for i in current.data.warehouseItems:
+                if i.itemNumber == itemNumber: 
+                    return current.data.warehouseName            
+            current = current.next          
+        return False
 
     def __str__(self):
         return "%s"%(self.head)
-
     def __repr__(self):
         return "%s"%(self.head)
 
@@ -302,8 +309,10 @@ def task1MenuChoice(menuChoice,Warehouses):
         if menuChoice == 1:
            displayWarehouses(Warehouses)
            warehouseChoice = getValidInteger(1,5)
-           if  warehouseChoice !=5:
+           if warehouseChoice !=5:
                Warehouses[warehouseChoice-1].displayWarehouse()
+           else:
+               return
         elif menuChoice ==2:
               if task1MenuChoice.itemsLoaded == False:
                   tempWarehouse = Warehouse("temp",2000000000)
@@ -327,6 +336,12 @@ def setupBinaryTree(Warehouses):
     llist.append(Warehouses[2])
     llist.append(Warehouses[3])
     llist.printList()
+    item = llist.searchItem(17598)
+    print(item)
+    item = llist.searchItem(13111)
+    print(item)
+    item = llist.searchItem(13110)
+    print(item)
 
 def task2Menu():
 
