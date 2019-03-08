@@ -336,21 +336,40 @@ def task2MenuChoice(menuChoice,Warehouses):
 def setupTask2(Warehouses):
     
     task2data =[]
-    van =[]
+    days =0   
+    originWarehouse = 'A'   
     allWarehousesItems = []
     WarehousesCopy = copy.deepcopy(Warehouses)
-
     loadcsv2('TASK 2(1).csv',task2data)
-    van = loadVan('C','D',task2data,WarehousesCopy)
+    print(task2data)
 
-def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy):
+    for i in range(0,3):
+        targetWarehouse = 'A'
+        for j in range(0,4):
+            deliverItems = [False]
+            van = loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItems)
+            if deliverItems[0] == True:                  
+                deliverVanItems(targetWarehouse,van,WarehousesCopy)
+                days+=1                             
+            targetWarehouse = chr(ord(targetWarehouse)+1)
+        originWarehouse = chr(ord(originWarehouse)+1)
+    print(days)
+        
+def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItems):
 
-    van = []
+    van = Warehouse("van",2000000000)
+    van.addShape("Rectangle",2000,10)
+    van.addShape("Square",2000,10)
+    van.addShape("Sphere",2000,10)
+    van.addShape("Pyramid",2000,10)
+
     for i in range (0,len(task2data)):
-        if task2data[i][1]==originWarehouse and task2data[i][2]==targetWarehouse:
+        if task2data[i][1]==originWarehouse and task2data[i][2]==targetWarehouse:         
            warehousePosition = getWarehousePosition(WarehousesCopy,originWarehouse)
+           WarehousesCopy[warehousePosition].warehouseItems = mergeSort(WarehousesCopy[warehousePosition].warehouseItems)
            itemPosition = interpolationSearch(WarehousesCopy[warehousePosition].warehouseItems,task2data[i][0])
-           van.append(WarehousesCopy[warehousePosition].warehouseItems[itemPosition])
+           van.addItem(WarehousesCopy[warehousePosition].warehouseItems[itemPosition],False)
+           deliverItems[0] = True
     return van
 
 def getWarehousePosition(WarehousesCopy,selectedwarehouseName):
@@ -358,6 +377,13 @@ def getWarehousePosition(WarehousesCopy,selectedwarehouseName):
     for i in range(0,len(WarehousesCopy)):
         if WarehousesCopy[i].warehouseName == selectedwarehouseName:
             return i
+
+def deliverVanItems(targetWarehouse,van,WarehousesCopy):
+    
+    warehousepos = getWarehousePosition(WarehousesCopy,targetWarehouse)
+    for i in range(0,len(van.warehouseItems)):
+        WarehousesCopy[warehousepos].addItem(van.warehouseItems[i],False)
+
 
 def interpolationSearch(warehouseItems,id):
 
