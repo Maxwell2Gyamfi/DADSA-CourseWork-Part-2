@@ -111,7 +111,13 @@ class Warehouse(object):
          print("Item %s rejected, warehouse %s cannot accomodate %s item shapes"
             %(warehouseItem.itemNumber,self.warehouseName,warehouseItem.itemShape))
          return False
-    
+
+    def getItemsWeigth(self):
+        itemsWeigth =0
+        for i in self.warehouseItems:
+            itemsWeigth+=i.itemWeight
+        return itemsWeigth
+
     def displayWarehouse(self):
         os.system('cls')
         print("\nWAREHOUSE INFORMATION: ")
@@ -363,14 +369,19 @@ def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItem
     van.addShape("Square",2000,10)
     van.addShape("Sphere",2000,10)
     van.addShape("Pyramid",2000,10)
+    itemsWeight = 0
 
     for i in range (0,len(task2data)):
         if task2data[i][1]==originWarehouse and task2data[i][2]==targetWarehouse:         
            warehousePosition = getWarehousePosition(WarehousesCopy,originWarehouse)
            WarehousesCopy[warehousePosition].warehouseItems = mergeSort(WarehousesCopy[warehousePosition].warehouseItems)
            itemPosition = interpolationSearch(WarehousesCopy[warehousePosition].warehouseItems,task2data[i][0])
-           van.addItem(WarehousesCopy[warehousePosition].warehouseItems[itemPosition],False)
+           van.addItem(WarehousesCopy[warehousePosition].warehouseItems[itemPosition],False)           
            deliverItems[0] = True
+
+    itemsWeight = van.getItemsWeigth()
+    print(itemsWeight)
+
     return van
 
 def getWarehousePosition(WarehousesCopy,selectedwarehouseName):
