@@ -112,7 +112,7 @@ class Warehouse(object):
             %(warehouseItem.itemNumber,self.warehouseName,warehouseItem.itemShape))
          return False
 
-    def getItemsWeigth(self):
+    def getItemsWeight(self):
         itemsWeigth =0
         for i in self.warehouseItems:
             itemsWeigth+=i.itemWeight
@@ -379,7 +379,7 @@ def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItem
            van.addItem(WarehousesCopy[warehousePosition].warehouseItems[itemPosition],False)           
            deliverItems[0] = True
 
-    itemsWeight = van.getItemsWeigth()
+    itemsWeight = van.getItemsWeight()
     print(itemsWeight)
 
     return van
