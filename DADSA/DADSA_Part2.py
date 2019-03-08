@@ -341,19 +341,20 @@ def setupTask2(Warehouses):
     allWarehousesItems = []
     WarehousesCopy = copy.deepcopy(Warehouses)
     loadcsv2('TASK 2(1).csv',task2data)
-    print(task2data)
 
     for i in range(0,3):
         targetWarehouse = 'A'
+        print("\nItems from Warehouse:%s"%(originWarehouse))
+        print("-----------------------")
         for j in range(0,4):
-            deliverItems = [False]
+            deliverItems = [False]          
             van = loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItems)
             if deliverItems[0] == True:                  
                 deliverVanItems(targetWarehouse,van,WarehousesCopy)
-                days+=1                             
+                days+=1 
+                print("Total Days:%s\n"%(days))                                            
             targetWarehouse = chr(ord(targetWarehouse)+1)
-        originWarehouse = chr(ord(originWarehouse)+1)
-    print(days)
+        originWarehouse = chr(ord(originWarehouse)+1)   
         
 def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItems):
 
