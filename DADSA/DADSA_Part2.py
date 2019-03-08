@@ -54,8 +54,11 @@ class LinkedList:
     def __repr__(self):
         return "%s"%(self.head)
 
+
 class Item():
 
+
+    #default constructor
     def __init__(self,item_number=None,itemDescription=None,
                   item_price=None,itemShape = None,itemWeight =None):
 
@@ -64,7 +67,8 @@ class Item():
         self.itemPrice = item_price
         self.itemShape = itemShape
         self.itemWeight = itemWeight
-  
+ 
+   
     def __str__(self):
         return "%-8s  %-45s £%-10s %-10s %s "%(self.itemNumber,self.itemDescription,self.itemPrice,
                                           self.itemShape,self.itemWeight)
@@ -105,7 +109,7 @@ class Warehouse(object):
                           %(warehouseItem.itemNumber,self.warehouseName))
                     return False
          print("Item %s rejected, warehouse %s cannot accomodate %s item shapes"
-               %(warehouseItem.itemNumber,self.warehouseName,i.shapeName))
+            %(warehouseItem.itemNumber,self.warehouseName,warehouseItem.itemShape))
          return False
     
     def displayWarehouse(self):
@@ -255,15 +259,16 @@ def mainMenu():
 
 def menuSelection(menuChoice,Warehouses):
 
-        if menuChoice ==1:                 
+    while(menuChoice!=5):
+        if(menuChoice ==1):                 
            task1Menu()
-           taskMenuSelection = getValidInteger(1,3)
-           task1MenuChoice(taskMenuSelection,Warehouses)
-        elif menuChoice==2:
-           setupBinaryTree(Warehouses)
-           task2Menu()
-           taskMenuSelection = getValidInteger(1,3)
-           task2MenuChoice(taskMenuSelection,Warehouses)
+           task1MenuSelection = getValidInteger(1,3)
+           task1MenuChoice(task1MenuSelection,Warehouses)
+        elif(menuChoice==2):
+            task2MenuSelection = getValidInteger(1,3)
+            task2MenuChoice(task2MenuSelection,Warehouses)   
+
+    return 
 
 def displayWarehouses(Warehouses):
     
@@ -304,44 +309,160 @@ def task1Menu():
     print("\nSelect choice(1-3): ")
 
 def task1MenuChoice(menuChoice,Warehouses):
-    while(menuChoice!=3):
-        task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
-        if menuChoice == 1:
-           displayWarehouses(Warehouses)
-           warehouseChoice = getValidInteger(1,5)
-           if warehouseChoice !=5:
-               Warehouses[warehouseChoice-1].displayWarehouse()
-           else:
-               return
-        elif menuChoice ==2:
-              if task1MenuChoice.itemsLoaded == False:
-                  tempWarehouse = Warehouse("temp",2000000000)
-                  createTempWarehouse(tempWarehouse)         
-                  task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
-              else:
-                  print("Data Loaded into warehouses already")
-             
+
+    task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
+    if menuChoice == 1:
+       displayWarehouses(Warehouses)
+       warehouseChoice = getValidInteger(1,5)
+       if menuChoice !=5:
+           Warehouses[warehouseChoice-1].displayWarehouse()
+    elif menuChoice ==2:
+          if task1MenuChoice.itemsLoaded == False:
+              tempWarehouse = Warehouse("temp",2000000000)
+              createTempWarehouse(tempWarehouse)         
+              task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
+          else:
+              print("Data Loaded into warehouses already")
+               
     input("Press any key to continue") 
     return
 
 def task2MenuChoice(menuChoice,Warehouses):
-     while(menuChoice!=3):
-       pass
+   if menuChoice == 1:
+       task2Menu()
+       setupTask2(Warehouses)
+     
 
-def setupBinaryTree(Warehouses):
+def setupTask2(Warehouses):
     
-    llist = LinkedList()
-    llist.append(Warehouses[0])
-    llist.append(Warehouses[1])
-    llist.append(Warehouses[2])
-    llist.append(Warehouses[3])
-    llist.printList()
-    item = llist.searchItem(17598)
-    print(item)
-    item = llist.searchItem(13111)
-    print(item)
-    item = llist.searchItem(13110)
-    print(item)
+    task2data =[]
+    van =[]
+    allWarehousesItems = []
+    WarehousesCopy = copy.deepcopy(Warehouses)
+
+    loadcsv2('TASK 2(1).csv',task2data)
+    van = loadVan('C','D',task2data,WarehousesCopy)
+
+def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy):
+
+    van = []
+    for i in range (0,len(task2data)):
+        if task2data[i][1]==originWarehouse and task2data[i][2]==targetWarehouse:
+           warehousePosition = getWarehousePosition(WarehousesCopy,originWarehouse)
+           itemPosition = interpolationSearch(WarehousesCopy[warehousePosition].warehouseItems,task2data[i][0])
+           van.append(WarehousesCopy[warehousePosition].warehouseItems[itemPosition])
+    return van
+
+def getWarehousePosition(WarehousesCopy,selectedwarehouseName):
+
+    for i in range(0,len(WarehousesCopy)):
+        if WarehousesCopy[i].warehouseName == selectedwarehouseName:
+            return i
+
+def interpolationSearch(warehouseItems,id):
+
+    #calculates lenght of warehouse contents
+    lenght= len(warehouseItems)
+    #indexes
+    start =0
+    end = lenght-1
+    #return false if warehouse contents is empty
+    if end ==-1:
+        return False
+    
+    #repeat while start index is less than end index and item number not found
+    while ((start<end) <=id and (id >=warehouseItems[start].itemNumber)and (id <=warehouseItems[end].itemNumber)):
+          try:
+            position = int(start+(float((end-start)
+           /(warehouseItems[end].itemNumber-warehouseItems[start].itemNumber))*(id-warehouseItems[start].itemNumber)))
+          except ZeroDivisionError:#ignores error if only an item in warehouse contents
+              return 0
+          if warehouseItems[position].itemNumber ==id:#returns item position
+              return position
+          #reset start and end indexes 
+          if id > warehouseItems[position].itemNumber:
+              start = position+1 
+          else:
+               end = position-1
+    return False
+
+def copyAllWarehouses(WarehousesCopy):
+
+    allWarehousesItems = []
+    for i in WarehousesCopy:
+        allWarehousesItems.extend(i.warehouseItems)
+
+    return allWarehousesItems
+
+def mergeSort(selectedWarehouse):
+    #returns sorted selected warehouse items
+        if len(selectedWarehouse)<=1:
+            return selectedWarehouse
+        #get middle value
+        mid = int(len(selectedWarehouse)/2)
+        #sorts each halve of selected warehouse items
+        lefthalf,righthalf = mergeSort(selectedWarehouse[:mid]),mergeSort(selectedWarehouse[mid:])
+        return merge(lefthalf,righthalf)
+
+
+'''
+Function Name: 
+  --> merge(left,right)
+
+Function Description:
+  --> This function compares the left index value to the right index value and appends
+      the values to result_container list in ascending order.
+  --> If leftindex or rightindex variable is above the lenght of left or right list then copy
+      the remaining values to result_container.  
+
+User Interface Variables:
+  --> OUT(Return Values):
+      - result_container
+  --> IN(Value Parameters):
+      - left half and right half of selected warehouse
+  --> IN and OUT (Reference Parameters):
+      - None
+'''              
+def merge(left,right):
+
+    #local variables
+    resultContainer=[]
+    leftIndex=rightIndex=0
+
+    while leftIndex<len(left) and rightIndex <len(right):
+        #appends item to result_container list and increase index
+         if left[leftIndex].itemNumber<right[rightIndex].itemNumber:
+            resultContainer.append(left[leftIndex])
+            leftIndex+=1
+         else:
+           resultContainer.append(right[rightIndex])
+           rightIndex+=1
+    #copy remaining elements of a half into result_container
+    resultContainer.extend(left[leftIndex:])
+    resultContainer.extend(right[rightIndex:])
+   
+    return resultContainer
+
+
+def loadcsv2(csvFilename,task2data):
+    
+    
+    try:
+        with open(csvFilename) as csvFile:
+                  reader = csv.reader(csvFile)
+                  next(reader,None)
+                  for itemNumber,selectedWarehouse,targetWarehouse in reader:
+                      temp =[]
+                      itemNumber = int(itemNumber)
+                      temp.append(itemNumber)
+                      temp.append(selectedWarehouse)
+                      temp.append(targetWarehouse)                      
+                      task2data.append(temp)
+
+    except FileNotFoundError:
+          print(FileNotFoundError)
+    return
+
 
 def task2Menu():
 
