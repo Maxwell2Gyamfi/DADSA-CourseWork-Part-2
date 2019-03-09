@@ -435,7 +435,7 @@ def setupTask2(Warehouses):
     print("\n\n               DAYS TO RELOCATE TASK 2 ITEMS")
     print("               ------------------------------")
     task2data =[]
-    days =0   
+    
     originWarehouse = 'A'   
     allWarehousesItems = []
     loadcsv2('TASK 2(1).csv',task2data)
@@ -445,30 +445,28 @@ def setupTask2(Warehouses):
         print("\nWAREHOUSE: %s pickups"%(originWarehouse))
         print("---------  - -------")
         for j in range(0,4):
-            deliverItems = [False]                        
+            deliverItems = [False]             
             van = loadVan(originWarehouse,targetWarehouse,task2data,Warehouses,deliverItems)
-            if deliverItems[0] == True: 
-                days+=1  
-                print("\nDay %s"%(days))
-                print("--- --")                                    
+            if deliverItems[0] == True:                                                
                 deliverVanItems(targetWarehouse,van,Warehouses)          
             targetWarehouse = chr(ord(targetWarehouse)+1)
         originWarehouse = chr(ord(originWarehouse)+1)
-        
-    print("Total Days:%s\n"%(days))   
-        
+                
 def loadVan(origin,target,task2data,Warehouses,deliverItems):
 
   van = Van(1500000000,2000) 
   itemsWeight = 0
   number = 0
-
+  loadVan.days = getattr(loadVan,'days',0) 
   for i in range (0,len(task2data)):
      if task2data[i][1]==origin and task2data[i][2]==target:         
         originIndex = getWarehousePosition(Warehouses,origin)
         targetIndex = getWarehousePosition(Warehouses,target)        
         item = createItem(Warehouses[originIndex],task2data[i][0])      
         if number != targetIndex:
+            loadVan.days+=1  
+            print("\n   Day:%s"%(loadVan.days))
+            print("   --- -") 
             temp = copy.deepcopy(Warehouses[targetIndex])
             number = targetIndex
         item11 = Warehouses[originIndex].moveItemtoVan(item,temp)
