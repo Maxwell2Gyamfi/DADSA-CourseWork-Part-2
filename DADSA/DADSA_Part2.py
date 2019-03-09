@@ -427,7 +427,6 @@ def task1MenuChoice(menuChoice,Warehouses):
                
     input("Press any key to continue") 
     return
-
      
 def setupTask2(Warehouses):
     
@@ -442,7 +441,8 @@ def setupTask2(Warehouses):
 
     for i in range(0,3):
         targetWarehouse = 'A'
-        print("\nWAREHOUSE: %s pickups"%(originWarehouse))
+        print("\n---------  - -------")
+        print("WAREHOUSE: %s pickups"%(originWarehouse))
         print("---------  - -------")
         for j in range(0,4):
             deliverItems = [False]             
