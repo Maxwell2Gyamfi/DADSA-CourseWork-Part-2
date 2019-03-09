@@ -101,8 +101,8 @@ class Warehouse(object):
                           %(warehouseItem.itemNumber,self.warehouseName))
                       return True
                   else:
-                      print("Item rejected, item %s storage capacity exceeds warehouse %s capacity"
-                            %(warehouseItem.itemNumber,self.warehouseName))
+                      print("Item rejected, item %s storage capacity %s exceeds warehouse %s capacity %s"
+                            %(warehouseItem.itemNumber,warehouseItem.itemWeight,self.warehouseName,i.storageQuantity))
                       return False
                 else:
                     print("Item rejected, item %s value exceeds warehouse %s remaining insurance"
@@ -129,7 +129,32 @@ class Warehouse(object):
         print("  ---> Available Shapes: %s"%(self.warehouseShapes))
         self.warehouseItems = self.insertionSort()
         self.printWarehouseItems()
-  
+
+    def binarySearch(self,start,end,itemNumber):
+        while end>=start:     
+           middle = start+(end-start)/2
+           middle = int(middle)      
+           if itemNumber==self.warehouseItems[middle].itemNumber:
+              return middle
+           else:           
+              if self.warehouseItems[middle].itemNumber>itemNumber:
+                 end = middle-1
+              else : 
+                start = middle+1             
+        else:        
+          print("An item with the id '%s' does not exits in the records..."%itemNumber)       
+          return -1
+
+    def removeItem(self,itemNumber):
+      position = 0
+      self.warehouseItems = self.insertionSort()
+      position = self.binarySearch(0,len(self.warehouseItems),itemNumber)
+      if position >= 0:
+         temp = self.warehouseItems[position]
+         self.increaseWarehouseInsurance(self.warehouseItems[position].itemPrice)
+         self.increaseShapeValue(self.warehouseItems[position])
+         del self.warehouseItems[position]
+         return temp
 
     def insertionSort(self):
         j=0   
@@ -137,7 +162,7 @@ class Warehouse(object):
         for i in range(1,len(self.warehouseItems)):     
             swapList.insert(0,self.warehouseItems[i])
             j =i-1 
-            while swapList[0].itemPrice > self.warehouseItems[j].itemPrice and j>=0:
+            while swapList[0].itemNumber < self.warehouseItems[j].itemNumber and j>=0:
                     self.warehouseItems[j+1] = self.warehouseItems[j]
                     j=j-1
             self.warehouseItems[j+1] = swapList[0]
@@ -152,6 +177,11 @@ class Warehouse(object):
     def addShape(self,shapeName,weight,quantity):
         temp = storageShapes(shapeName,weight,quantity) 
         self.warehouseShapes.append(temp)
+
+    def increaseShapeValue(self,item):
+        for i in range(0,len(self.warehouseShapes)):
+            if(item.itemShape == self.warehouseShapes[i]):
+                self.warehouseShapes[i].increaseStorageWeigth()
 
     def increaseWarehouseInsurance(self,amount):
         self.remainingInsurance+=amount
@@ -172,6 +202,30 @@ class Warehouse(object):
 
     def __repr__(self):
          return "%s %s"%(self.warehouseName, self.remainingInsurance)
+
+class Van():
+
+    def __init__(self,remainingInsurance=None,remainingWeightCapacity=None):
+        self.remainingInsurance = remainingInsurance
+        self.remainingWeightCapacity = remainingWeightCapacity
+        self.vanItems=[]
+
+    def addItem(self,vanItem):
+        if vanItem.itemWeight > self.remainingWeightCapacity:
+            print("Item weight exceeds van capacity")
+        elif vanItem.itemPrice > self.remainingInsurance:
+            print("Item price exceeds van capacity")
+        else:
+            self.vanItems.append(vanItem)
+            self.remainingInsurance-=vanItem.itemPrice
+            self.remainingWeightCapacity -= vanItem.itemWeight
+            print("Item %s added to van"%(vanItem.itemNumber))
+
+    def printVanItems(self):
+        print("\nItem No.  Description                                   Price       Shape      Weigth(kg)")
+        print("--------  -----------                                   -----       -----      ------\n")
+        for i in self.vanItems:
+            print(i)
 
 class storageShapes():
     
@@ -345,7 +399,6 @@ def setupTask2(Warehouses):
     days =0   
     originWarehouse = 'A'   
     allWarehousesItems = []
-    WarehousesCopy = copy.deepcopy(Warehouses)
     loadcsv2('TASK 2(1).csv',task2data)
 
     for i in range(0,3):
@@ -354,33 +407,27 @@ def setupTask2(Warehouses):
         print("-----------------------")
         for j in range(0,4):
             deliverItems = [False]          
-            van = loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItems)
+            van = loadVan(originWarehouse,targetWarehouse,task2data,Warehouses,deliverItems)
             if deliverItems[0] == True:                  
-                deliverVanItems(targetWarehouse,van,WarehousesCopy)
-                days+=1 
-                print("Total Days:%s\n"%(days))                                            
+                deliverVanItems(targetWarehouse,van,Warehouses)
+                days+=1                                                           
             targetWarehouse = chr(ord(targetWarehouse)+1)
-        originWarehouse = chr(ord(originWarehouse)+1)   
+        originWarehouse = chr(ord(originWarehouse)+1)  
+    print("Total Days:%s\n"%(days))   
         
-def loadVan(originWarehouse,targetWarehouse,task2data,WarehousesCopy,deliverItems):
+def loadVan(originWarehouse,targetWarehouse,task2data,Warehouses,deliverItems):
 
-    van = Warehouse("van",2000000000)
-    van.addShape("Rectangle",2000,10)
-    van.addShape("Square",2000,10)
-    van.addShape("Sphere",2000,10)
-    van.addShape("Pyramid",2000,10)
+    van = Van(1500000000,2000)
+ 
     itemsWeight = 0
 
     for i in range (0,len(task2data)):
         if task2data[i][1]==originWarehouse and task2data[i][2]==targetWarehouse:         
-           warehousePosition = getWarehousePosition(WarehousesCopy,originWarehouse)
-           WarehousesCopy[warehousePosition].warehouseItems = mergeSort(WarehousesCopy[warehousePosition].warehouseItems)
-           itemPosition = interpolationSearch(WarehousesCopy[warehousePosition].warehouseItems,task2data[i][0])
-           van.addItem(WarehousesCopy[warehousePosition].warehouseItems[itemPosition],False)           
+           warehousePosition = getWarehousePosition(Warehouses,originWarehouse)
+           Warehouses[warehousePosition].warehouseItems = Warehouses[warehousePosition].insertionSort()
+           item11 = Warehouses[warehousePosition].removeItem(task2data[i][0])
+           van.addItem(item11)           
            deliverItems[0] = True
-
-    itemsWeight = van.getItemsWeight()
-    print(itemsWeight)
 
     return van
 
@@ -393,8 +440,8 @@ def getWarehousePosition(WarehousesCopy,selectedwarehouseName):
 def deliverVanItems(targetWarehouse,van,WarehousesCopy):
     
     warehousepos = getWarehousePosition(WarehousesCopy,targetWarehouse)
-    for i in range(0,len(van.warehouseItems)):
-        WarehousesCopy[warehousepos].addItem(van.warehouseItems[i],False)
+    for i in range(0,len(van.vanItems)):
+        WarehousesCopy[warehousepos].addItem(van.vanItems[i],False)
 
 
 def interpolationSearch(warehouseItems,id):
@@ -409,16 +456,16 @@ def interpolationSearch(warehouseItems,id):
         return False
     
     #repeat while start index is less than end index and item number not found
-    while ((start<end) <=id and (id >=warehouseItems[start].itemNumber)and (id <=warehouseItems[end].itemNumber)):
+    while ((start<end) <=id and (id >=warehouseItems[start].itemPrice)and (id <=warehouseItems[end].itemPrice)):
           try:
             position = int(start+(float((end-start)
-           /(warehouseItems[end].itemNumber-warehouseItems[start].itemNumber))*(id-warehouseItems[start].itemNumber)))
+           /(warehouseItems[end].itemPrice-warehouseItems[start].itemPrice))*(id-warehouseItems[start].itemPrice)))
           except ZeroDivisionError:#ignores error if only an item in warehouse contents
               return 0
-          if warehouseItems[position].itemNumber ==id:#returns item position
+          if warehouseItems[position].itemPrice ==id:#returns item position
               return position
           #reset start and end indexes 
-          if id > warehouseItems[position].itemNumber:
+          if id > warehouseItems[position].itemPrice:
               start = position+1 
           else:
                end = position-1
