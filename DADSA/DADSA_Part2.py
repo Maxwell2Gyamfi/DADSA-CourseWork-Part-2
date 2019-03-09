@@ -362,8 +362,11 @@ def menuSelection(menuChoice,Warehouses):
            task1Menu()
            task1MenuSelection = getValidInteger(1,3)
            task1MenuChoice(task1MenuSelection,Warehouses)
-        elif(menuChoice==2):          
-            setupTask2(Warehouses)   
+        elif(menuChoice==2):
+            WarehousesCopy = createWarehouses()
+            readcsvFiletoWarehouse(WarehousesCopy)
+            setupTask2(WarehousesCopy)
+            input()
 
         return menuChoice
 
@@ -412,7 +415,7 @@ def task1MenuChoice(menuChoice,Warehouses):
     if menuChoice == 1:
        displayWarehouses(Warehouses)
        warehouseChoice = getValidInteger(1,5)
-       if menuChoice !=5:
+       if warehouseChoice  !=5:
            Warehouses[warehouseChoice-1].displayWarehouse()
     elif menuChoice ==2:
           if task1MenuChoice.itemsLoaded == False:
