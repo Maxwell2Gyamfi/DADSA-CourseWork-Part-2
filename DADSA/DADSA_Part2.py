@@ -101,7 +101,7 @@ class Warehouse(object):
                           %(warehouseItem.itemNumber,self.warehouseName))
                       return True
                   else:
-                      print("Item rejected, item %s storage capacity %s exceeds warehouse %s capacity %s"
+                      print("Item rejected, item %s storage weight %s exceeds warehouse %s quantity %s"
                             %(warehouseItem.itemNumber,warehouseItem.itemWeight,self.warehouseName,i.storageQuantity))
                       return False
                 else:
@@ -131,6 +131,7 @@ class Warehouse(object):
         self.printWarehouseItems()
 
     def binarySearch(self,start,end,itemNumber):
+        self.warehouseItems = self.insertionSort()
         while end>=start:     
            middle = start+(end-start)/2
            middle = int(middle)      
@@ -145,16 +146,34 @@ class Warehouse(object):
           print("An item with the id '%s' does not exits in the records..."%itemNumber)       
           return -1
 
-    def removeItem(self,itemNumber):
-      position = 0
-      self.warehouseItems = self.insertionSort()
-      position = self.binarySearch(0,len(self.warehouseItems),itemNumber)
-      if position >= 0:
-         temp = self.warehouseItems[position]
-         self.increaseWarehouseInsurance(self.warehouseItems[position].itemPrice)
-         self.increaseShapeValue(self.warehouseItems[position])
-         del self.warehouseItems[position]
-         return temp
+    def moveItemtoVan(self,item,target):
+      x =0  
+      for i in range(0,len(target.warehouseShapes)):
+          if target.warehouseShapes[i].shapeName == item.itemShape:
+              x =i
+              break
+      if item.itemPrice > target.remainingInsurance:
+          print("Van rejects item '%s', item price exceeds warehouse '%s' remaining insurance"
+                 %(target.warehouseName,item.itemNumber))
+    
+      elif item.itemWeight > target.warehouseShapes[x].storageWeight:
+          print("Van rejects item '%s', item storage weight '%s' exceeds warehouse '%s' '%s' storage capacity '%s'"
+                %(item.itemNumber,
+                  item.itemWeight,
+                  target.warehouseName,
+                  item.itemShape,
+                  target.warehouseShapes[x].storageWeight))
+      elif target.warehouseShapes[x].storageQuantity ==0:
+          print("adddd")
+      else:
+          position = 0    
+          position = self.binarySearch(0,len(self.warehouseItems),item.itemNumber)
+          if position >= 0:
+             temp = self.warehouseItems[position]
+             self.increaseWarehouseInsurance(self.warehouseItems[position].itemPrice)
+             self.increaseShapeValue(self.warehouseItems[position])
+             del self.warehouseItems[position]
+             return temp
 
     def insertionSort(self):
         j=0   
@@ -182,6 +201,16 @@ class Warehouse(object):
         for i in range(0,len(self.warehouseShapes)):
             if(item.itemShape == self.warehouseShapes[i]):
                 self.warehouseShapes[i].increaseStorageWeigth()
+    
+    def decreaseShapeValue(self,item):
+        for i in range(0,len(self.warehouseShapes)):
+            if(item.itemShape == self.warehouseShapes[i]):
+                self.warehouseShapes[i].decreaseStorageWeigth()
+
+    def getItemShape(warehouse,item):
+        for i in range (0,len(warehouse.warehouseShapes)):
+            if warehouse.warehouseShapes[i].shapeName == item.itemShape:
+                return i
 
     def increaseWarehouseInsurance(self,amount):
         self.remainingInsurance+=amount
@@ -403,45 +432,57 @@ def setupTask2(Warehouses):
 
     for i in range(0,3):
         targetWarehouse = 'A'
-        print("\nItems from Warehouse:%s"%(originWarehouse))
+        print("\nPickups from Warehouse:%s"%(originWarehouse))
         print("-----------------------")
         for j in range(0,4):
             deliverItems = [False]          
             van = loadVan(originWarehouse,targetWarehouse,task2data,Warehouses,deliverItems)
-            if deliverItems[0] == True:                  
-                deliverVanItems(targetWarehouse,van,Warehouses)
-                days+=1                                                           
+            if deliverItems[0] == True: 
+                days+=1
+                print("\nDelivery day: %s"%(days))
+                print("------------  --")
+                deliverVanItems(targetWarehouse,van,Warehouses)          
             targetWarehouse = chr(ord(targetWarehouse)+1)
         originWarehouse = chr(ord(originWarehouse)+1)  
     print("Total Days:%s\n"%(days))   
         
-def loadVan(originWarehouse,targetWarehouse,task2data,Warehouses,deliverItems):
+def loadVan(origin,target,task2data,Warehouses,deliverItems):
 
-    van = Van(1500000000,2000)
- 
-    itemsWeight = 0
+  van = Van(1500000000,2000) 
+  itemsWeight = 0
 
-    for i in range (0,len(task2data)):
-        if task2data[i][1]==originWarehouse and task2data[i][2]==targetWarehouse:         
-           warehousePosition = getWarehousePosition(Warehouses,originWarehouse)
-           Warehouses[warehousePosition].warehouseItems = Warehouses[warehousePosition].insertionSort()
-           item11 = Warehouses[warehousePosition].removeItem(task2data[i][0])
-           van.addItem(item11)           
-           deliverItems[0] = True
+  for i in range (0,len(task2data)):
+     if task2data[i][1]==origin and task2data[i][2]==target:         
+        originIndex = getWarehousePosition(Warehouses,origin)
+        targetIndex = getWarehousePosition(Warehouses,target)
+        
+        item = createItem(Warehouses[originIndex],task2data[i][0])
+        if item.itemNumber == 17598:
+            print("sdfdsg")
+        item11 = Warehouses[originIndex].moveItemtoVan(item,Warehouses[targetIndex])
+        if item11 != None:
+            van.addItem(item11)           
+            deliverItems[0] = True
 
-    return van
+  return van
 
-def getWarehousePosition(WarehousesCopy,selectedwarehouseName):
+def createItem(targetWarehouse,itemID):
+   
+    i = targetWarehouse.binarySearch(0,len(targetWarehouse.warehouseItems)-1,itemID)
+    item = targetWarehouse.warehouseItems[i]
+    return item
+
+def getWarehousePosition(WarehousesCopy,targetName):
 
     for i in range(0,len(WarehousesCopy)):
-        if WarehousesCopy[i].warehouseName == selectedwarehouseName:
+        if WarehousesCopy[i].warehouseName == targetName:
             return i
 
-def deliverVanItems(targetWarehouse,van,WarehousesCopy):
+def deliverVanItems(targetWarehouse,van,Warehouses):
     
-    warehousepos = getWarehousePosition(WarehousesCopy,targetWarehouse)
+    index = getWarehousePosition(Warehouses,targetWarehouse)
     for i in range(0,len(van.vanItems)):
-        WarehousesCopy[warehousepos].addItem(van.vanItems[i],False)
+        Warehouses[index].addItem(van.vanItems[i],False)
 
 
 def interpolationSearch(warehouseItems,id):
