@@ -2,7 +2,7 @@ import csv
 import os
 import pickle
 import copy
-
+days = 0 
 class Node: 
   
     def __init__(self, data): 
@@ -179,8 +179,8 @@ class Warehouse(object):
           position = self.binarySearch(0,len(self.warehouseItems),item.itemNumber)
           if position >= 0:
              temp = self.warehouseItems[position]
-             self.increaseWarehouseInsurance(self.warehouseItems[position].itemPrice)
-             self.increaseShapeValue(self.warehouseItems[position])
+             self.increaseWarehouseInsurance(temp.itemPrice)
+             self.increaseShapeValue(temp)
              del self.warehouseItems[position]
              target.warehouseShapes[x].decreaseStorageWeight()
              return temp
@@ -326,10 +326,13 @@ def createWarehouses():
 def main():
 
     global Warehouses
-    Warehouses = []
+    global task1Warehouses
+
     menuChoice = 0
     Warehouses = createWarehouses()
     readcsvFiletoWarehouse(Warehouses)
+    task1Warehouses = copy.deepcopy(Warehouses)
+   
 
     while(menuChoice!=5):     
         mainMenu()
@@ -357,15 +360,18 @@ def mainMenu():
     print("\nSelect choice(1-5): ")
 
 def menuSelection(menuChoice,Warehouses):
-  
-        if(menuChoice ==1):                 
-           task1Menu()
-           task1MenuSelection = getValidInteger(1,3)
-           task1MenuChoice(task1MenuSelection,Warehouses)
-        elif(menuChoice==2):
-            WarehousesCopy = createWarehouses()
-            readcsvFiletoWarehouse(WarehousesCopy)
-            setupTask2(WarehousesCopy)
+
+        task1MenuSelection = 0
+        task2Warehouses = copy.deepcopy(Warehouses)
+
+        if(menuChoice ==1): 
+           while task1MenuSelection !=3:
+               task1Menu()               
+               task1MenuSelection = getValidInteger(1,3)
+               task1MenuChoice(task1MenuSelection,task1Warehouses)
+
+        elif(menuChoice==2):        
+            setupTask2(task2Warehouses)
             input()
 
         return menuChoice
@@ -410,23 +416,31 @@ def task1Menu():
     print("\nSelect choice(1-3): ")
 
 def task1MenuChoice(menuChoice,Warehouses):
+  
+        displayAnother ='Y'
+        task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
+        if menuChoice == 1:
+           while displayAnother =='Y':
+               displayWarehouses(Warehouses)
+               warehouseChoice = getValidInteger(1,5)
+               if warehouseChoice ==5:
+                   return
+               else:
+                   Warehouses[warehouseChoice-1].displayWarehouse()
+                   print("\nDisplay another warehouse?(Y/N): ")
+                   displayAnother = getValidYesOrNo()
+        elif menuChoice ==2:
+              if task1MenuChoice.itemsLoaded == False:
+                  tempWarehouse = Warehouse("temp",2000000000)
+                  createTempWarehouse(tempWarehouse)         
+                  task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
+              else:
+                  print("Data Loaded into warehouses already")
+        elif menuChoice ==3:
+             return
 
-    task1MenuChoice.itemsLoaded = getattr(task1MenuChoice,'itemsLoaded',False)
-    if menuChoice == 1:
-       displayWarehouses(Warehouses)
-       warehouseChoice = getValidInteger(1,5)
-       if warehouseChoice  !=5:
-           Warehouses[warehouseChoice-1].displayWarehouse()
-    elif menuChoice ==2:
-          if task1MenuChoice.itemsLoaded == False:
-              tempWarehouse = Warehouse("temp",2000000000)
-              createTempWarehouse(tempWarehouse)         
-              task1MenuChoice.itemsLoaded = loadItemsToWarehouseA(tempWarehouse,Warehouses)              
-          else:
-              print("Data Loaded into warehouses already")
-               
-    input("Press any key to continue") 
-    return
+        input("Press any key to continue") 
+   
      
 def setupTask2(Warehouses):
     
@@ -451,21 +465,25 @@ def setupTask2(Warehouses):
                 deliverVanItems(targetWarehouse,van,Warehouses)          
             targetWarehouse = chr(ord(targetWarehouse)+1)
         originWarehouse = chr(ord(originWarehouse)+1)
-                
+
+    global days
+    days =0
+              
 def loadVan(origin,target,task2data,Warehouses,deliverItems):
 
   van = Van(1500000000,2000) 
   itemsWeight = 0
   number = 0
-  loadVan.days = getattr(loadVan,'days',0) 
+ 
   for i in range (0,len(task2data)):
      if task2data[i][1]==origin and task2data[i][2]==target:         
         originIndex = getWarehousePosition(Warehouses,origin)
         targetIndex = getWarehousePosition(Warehouses,target)        
         item = createItem(Warehouses[originIndex],task2data[i][0])      
         if number != targetIndex:
-            loadVan.days+=1  
-            print("\n   Day:%s"%(loadVan.days))
+            global days
+            days+=1
+            print("\n   Day:%s"%(days))
             print("   --- -") 
             temp = copy.deepcopy(Warehouses[targetIndex])
             number = targetIndex
@@ -546,6 +564,17 @@ def loadcsv(csvFilename,selectedWarehouse):
     except FileNotFoundError:
           print(FileNotFoundError)
     return
+
+def getValidYesOrNo():
+
+    flag =True
+    #prompts user to input Y or N
+    while flag:
+        yes_or_no = input(" ")
+        if yes_or_no.upper() == 'Y' or yes_or_no.upper() == 'N':
+           return yes_or_no.upper()
+        else:
+          print("Wrong input,enter Y OR N: ")
 
 def getValidInteger(minimum,maximum):
 
