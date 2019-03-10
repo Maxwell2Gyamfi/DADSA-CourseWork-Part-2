@@ -57,7 +57,6 @@ class LinkedList:
 
 class Item():
 
-
     #default constructor
     def __init__(self,item_number=None,itemDescription=None,
                   item_price=None,itemShape = None,itemWeight =None):
@@ -546,6 +545,13 @@ def task3(task3Warehouses):
     loadcsv2("TASK 3.csv",task3data)
 
     print(task3data)
+    llist = LinkedList()
+    llist.append(task3Warehouses[0])
+    llist.append(task3Warehouses[1])
+    llist.append(task3Warehouses[2])
+    llist.append(task3Warehouses[3])
+    warehousename = llist.searchItem(17699)
+    print(warehousename)
 
 
 
