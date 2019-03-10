@@ -363,13 +363,18 @@ def menuSelection(menuChoice,Warehouses):
         task1MenuSelection = 0
         task1Warehouses = copy.deepcopy(Warehouses)
         task2Warehouses = copy.deepcopy(Warehouses)
+        task3Warehouses = copy.deepcopy(Warehouses)
 
         if menuChoice ==1:             
             task1(task1Warehouses)
 
         elif menuChoice==2:        
-            setupTask2(task2Warehouses)
+            task2(task2Warehouses)
             input()
+
+        elif menuChoice ==3:
+             task3(task3Warehouses)
+    
 
         return menuChoice
 
@@ -421,7 +426,7 @@ def task1(task1Warehouses):
                             
    
      
-def setupTask2(Warehouses):
+def task2(task2Warehouses):
     
     os.system('cls')
     print("\n\n               DAYS TO RELOCATE TASK 2 ITEMS")
@@ -433,22 +438,22 @@ def setupTask2(Warehouses):
     loadcsv2('TASK 2(1).csv',task2data)
 
     for i in range(0,3):
-        targetWarehouse = 'A'
+        targetWarehouse = 'B'
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(originWarehouse))
         print("---------  - -------")
         for j in range(0,4):
             deliverItems = [False]             
-            van = loadVan(originWarehouse,targetWarehouse,task2data,Warehouses,deliverItems)
+            van = loadVan(originWarehouse,targetWarehouse,task2data,task2Warehouses,deliverItems)
             if deliverItems[0] == True:                                                
-                deliverVanItems(targetWarehouse,van,Warehouses)          
+                deliverVanItems(targetWarehouse,van,task2Warehouses)          
             targetWarehouse = chr(ord(targetWarehouse)+1)
         originWarehouse = chr(ord(originWarehouse)+1)
 
     global days
     days =0
               
-def loadVan(origin,target,task2data,Warehouses,deliverItems):
+def loadVan(origin,target,task2data,task2Warehouses,deliverItems):
 
   van = Van(1500000000,2000) 
   itemsWeight = 0
@@ -457,16 +462,16 @@ def loadVan(origin,target,task2data,Warehouses,deliverItems):
  
   for i in range (0,len(task2data)):
      if task2data[i][1]==origin and task2data[i][2]==target:         
-        originIndex = getWarehousePosition(Warehouses,origin)
-        targetIndex = getWarehousePosition(Warehouses,target)        
-        item = createItem(Warehouses[originIndex],task2data[i][0])      
+        originIndex = getWarehousePosition(task2Warehouses,origin)
+        targetIndex = getWarehousePosition(task2Warehouses,target)        
+        item = createItem(task2Warehouses[originIndex],task2data[i][0])      
         if number != targetIndex:          
             days+=1
             print("\n   Day:%s"%(days))
             print("   --- -") 
-            temp = copy.deepcopy(Warehouses[targetIndex])
+            temp = copy.deepcopy(task2Warehouses[targetIndex])
             number = targetIndex
-        item11 = Warehouses[originIndex].moveItemtoVan(item,temp)
+        item11 = task2Warehouses[originIndex].moveItemtoVan(item,temp)
         if item11 != None:
             van.addItem(item11)           
             deliverItems[0] = True
@@ -479,17 +484,17 @@ def createItem(targetWarehouse,itemID):
     item = targetWarehouse.warehouseItems[i]
     return item
 
-def getWarehousePosition(WarehousesCopy,targetName):
+def getWarehousePosition(task2Warehouses,targetName):
 
-    for i in range(0,len(WarehousesCopy)):
-        if WarehousesCopy[i].warehouseName == targetName:
+    for i in range(0,len(task2Warehouses)):
+        if task2Warehouses[i].warehouseName == targetName:
             return i
 
-def deliverVanItems(targetWarehouse,van,Warehouses):
+def deliverVanItems(targetWarehouse,van,task2Warehouses):
     
-    index = getWarehousePosition(Warehouses,targetWarehouse)
+    index = getWarehousePosition(task2Warehouses,targetWarehouse)
     for i in range(0,len(van.vanItems)):
-        Warehouses[index].addItem(van.vanItems[i],False)
+        task2Warehouses[index].addItem(van.vanItems[i],False)
 
 def loadcsv2(csvFilename,task2data):
         
@@ -517,7 +522,7 @@ def createTempWarehouse(tempWarehouse):
     tempWarehouse.addShape('Pyramid',2000,10)
     loadcsv('DATA TO INSERT INTO WAREHOUSE A.csv',tempWarehouse)
 
-def loadItemsToWarehouseA(tempWarehouse,Warehouses):
+def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 
     itemAdded = True
     os.system('cls')
@@ -527,10 +532,22 @@ def loadItemsToWarehouseA(tempWarehouse,Warehouses):
 
     for i in range(0,len(tempWarehouse.warehouseItems)):
         for j in range(0,4):
-            itemAdded = Warehouses[j].addItem(tempWarehouse.warehouseItems[i],False)
+            itemAdded = task1Warehouses[j].addItem(tempWarehouse.warehouseItems[i],False)
             if itemAdded == True:                
                 break        
     return True
+
+def task3(task3Warehouses):
+
+    task3data = []
+    os.system('cls')
+    print("          TASK 3")
+    print("          ------\n")
+    loadcsv2("TASK 3.csv",task3data)
+
+    print(task3data)
+
+
 
 def loadcsv(csvFilename,selectedWarehouse):
     try:
@@ -547,7 +564,6 @@ def loadcsv(csvFilename,selectedWarehouse):
 def getValidYesOrNo():
 
     flag =True
-    #prompts user to input Y or N
     while flag:
         yes_or_no = input(" ")
         if yes_or_no.upper() == 'Y' or yes_or_no.upper() == 'N':
@@ -557,18 +573,15 @@ def getValidYesOrNo():
 
 def getValidInteger(minimum,maximum):
 
-        #sets flag
         flag =True
         while flag == True:
-             number= input("")
-             #checks if input is valid integer
+             number= input("")   
              try:
                 if number.isdigit:
                    number = int(number)
              except ValueError:
                    print('You didnt input an input an integer,try again: (%d-%d))' % (minimum,maximum))
-             else:
-                 #checks if input is out of range
+             else:           
                  if number < minimum or number >maximum:
                     print('The entered number is out of range, try again: (%d-%d))' % (minimum,maximum))
                  else:
