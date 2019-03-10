@@ -539,21 +539,34 @@ def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 def task3(task3Warehouses):
 
     task3data = []
+    allTrips = []
+    startWarehouse ='A'
     os.system('cls')
     print("          TASK 3")
     print("          ------\n")
     loadcsv2("TASK 3.csv",task3data)
 
-    print(task3data)
-    llist = LinkedList()
-    llist.append(task3Warehouses[0])
-    llist.append(task3Warehouses[1])
-    llist.append(task3Warehouses[2])
-    llist.append(task3Warehouses[3])
-    warehousename = llist.searchItem(17699)
-    print(warehousename)
+    for i in range(0,len(task3Warehouses)):
+        fillVan(startWarehouse,task3data,task3Warehouses,allTrips)
+        startWarehouse = chr(ord(startWarehouse)+1)
 
+def fillVan(startWarehouse,task3data,task3Warehouses,allTrips):
 
+    target ='B'
+    trips = []
+
+    index = getWarehousePosition(task3Warehouses,startWarehouse)  
+    for j in range(0,3):
+        van = Van(1500000000,2000)
+        for i in range(0,len(task3data)):
+            if startWarehouse == task3data[i][1] and target == task3data[i][2]:
+               item = createItem(task3Warehouses[index],task3data[i][0])
+               x = task3Warehouses[index].binarySearch(0,len(task3Warehouses[index].warehouseItems),item.itemNumber)
+               van.addItem(task3Warehouses[index].warehouseItems[x])
+        target = chr(ord(target)+1)
+        trips.append(van)
+
+    allTrips.append(trips)
 
 def loadcsv(csvFilename,selectedWarehouse):
     try:
