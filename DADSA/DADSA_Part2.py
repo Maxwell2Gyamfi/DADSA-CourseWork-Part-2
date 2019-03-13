@@ -80,7 +80,6 @@ class Warehouse(object):
 
     overallInsurance =8000000000
 
-    #default constructor
     def __init__(self,warehouseName=None,remainingInsurance=None):
         self.warehouseName = warehouseName
         self.remainingInsurance = remainingInsurance
@@ -100,10 +99,11 @@ class Warehouse(object):
                           %(warehouseItem.itemNumber,self.warehouseName))
                       return True
                   else:
-                      print("Item rejected, item %s storage weight %s exceeds warehouse %s quantity %s"
+                      print("Item rejected, item %s storage weight %s exceeds warehouse %s %s quantity %s"
                             %(warehouseItem.itemNumber,
                               warehouseItem.itemWeight,
                               self.warehouseName,
+                              i.shapeName,
                               i.storageQuantity))
                       return False
                 else:
@@ -116,12 +116,7 @@ class Warehouse(object):
               warehouseItem.itemShape))
          return False
 
-    def getItemsWeight(self):
-        itemsWeigth =0
-        for i in self.warehouseItems:
-            itemsWeigth+=i.itemWeight
-        return itemsWeigth
-
+  
     def displayWarehouse(self):
         os.system('cls')
         print("\nWAREHOUSE INFORMATION: ")
@@ -242,6 +237,7 @@ class Van():
         self.remainingInsurance = remainingInsurance
         self.remainingWeightCapacity = remainingWeightCapacity
         self.vanItems=[]
+        self.vanTrips=[]
 
     def addItem(self,vanItem):
         if vanItem.itemWeight > self.remainingWeightCapacity:
@@ -250,10 +246,22 @@ class Van():
             print("Item price exceeds van capacity")
         else:
             self.vanItems.append(vanItem)
-            self.remainingInsurance-=vanItem.itemPrice
-            self.remainingWeightCapacity -= vanItem.itemWeight
+            self.decreaseRemainingInsurance(vanItem.itemPrice)
+            self.decreaseRemainingWeightCapacity(vanItem.itemWeight)
             print("Van picks-up item %s "%(vanItem.itemNumber))
     
+    def resetVan(self):
+        self.remainingInsurance = 1500000000
+        self.remainingWeightCapacity = 2000
+        self.vanTrips = []
+        self.vanItems = []
+      
+    def decreaseRemainingInsurance(self,price):
+        self.remainingInsurance-= price
+
+    def decreaseRemainingWeightCapacity(self,weight):
+        self.remainingWeightCapacity -= weight
+
     def printVanItems(self):
         print("\nItem No.  Description                                   Price       Shape      Weigth(kg)")
         print("--------  -----------                                   -----       -----      ------\n")
@@ -265,6 +273,29 @@ class Van():
 
     def __repr__(self):
          return "%s %s"%(self.remainingWeightCapacity, self.remainingInsurance)
+
+class Trip():
+
+    def __init__(self,startWarehouse=None,targetWarehouse=None):
+        self.startWarehouse = startWarehouse
+        self.targetWarehouse = targetWarehouse
+        self.tripItems=[]
+
+    def addItem(self,van,item):
+        if item.itemPrice > van.remainingInsurance:
+            print("Item cannot be added to trip,insurance exceeds van insurance")
+        elif item.itemWeight >  van.remainingWeightCapacity:
+            print("Item weight exceeds weight van remaining capacity")
+        else:
+            self.tripItems.append(item)
+            van.decreaseRemainingInsurance(item.itemPrice)
+            van.decreaseRemainingWeightCapacity(item.itemWeight)
+         
+    def __str__(self):
+        return "%s %s"%(self.startWarehouse,self.targetWarehouse)
+
+    def __repr__(self):
+        return "%s %s"%(self.startWarehouse,self.targetWarehouse)
 
 class storageShapes():
     
@@ -324,9 +355,6 @@ def createWarehouses():
 
 def main():
 
-    global Warehouses
-    global task1Warehouses
-
     menuChoice = 0
     Warehouses = createWarehouses()
     readcsvFiletoWarehouse(Warehouses)
@@ -352,7 +380,7 @@ def mainMenu():
     print("            ---------\n")
     print("     1 --> Load task 1 items to warehouses")
     print("     2 --> Days to relocate task 2 items")
-    print("     3 --> Task 3")
+    print("     3 --> Minimum number of trips")
     print("     4 --> Task 4")
     print("     5 --> Quit")
     print("\nSelect choice(1-5): ")
@@ -364,15 +392,23 @@ def menuSelection(menuChoice,Warehouses):
         task2Warehouses = copy.deepcopy(Warehouses)
         task3Warehouses = copy.deepcopy(Warehouses)
 
+        print(Warehouse.overallInsurance)
+
         if menuChoice ==1:             
             task1(task1Warehouses)
+            input("\nPress any key to continue")
+            displayResults(task1Warehouses)
 
         elif menuChoice==2:        
             task2(task2Warehouses)
-            input()
+            input("\nPress any key to continue")
+            displayResults(task2Warehouses)
+            
 
         elif menuChoice ==3:
-             task3(task3Warehouses)
+            task3(task3Warehouses)
+            input("\nPress any key to continue")
+            displayResults(task3Warehouses)
     
 
         return menuChoice
@@ -409,21 +445,22 @@ def task1(task1Warehouses):
          
         tempWarehouse = Warehouse("temp",2000000000)
         createTempWarehouse(tempWarehouse)
-        loadItemsToWarehouseA(tempWarehouse,task1Warehouses)
-        displayAnother ='Y'
-        input("\nPress any key to continue") 
-          
-        while displayAnother =='Y':
-              displayWarehouses(task1Warehouses)
+        loadItemsToWarehouseA(tempWarehouse,task1Warehouses)     
+        
+        
+                                  
+def displayResults(Warehouses):
+
+      displayAnother ='Y'
+      while displayAnother =='Y':
+              displayWarehouses(Warehouses)
               warehouseChoice = getValidInteger(1,5)
               if warehouseChoice == 5:
                  break
               else:
-                 task1Warehouses[warehouseChoice-1].displayWarehouse()
+                 Warehouses[warehouseChoice-1].displayWarehouse()
                  print("\nDisplay another warehouse?(Y/N): ")
                  displayAnother = getValidYesOrNo()
-                            
-   
      
 def task2(task2Warehouses):
     
@@ -539,34 +576,70 @@ def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 def task3(task3Warehouses):
 
     task3data = []
-    allTrips = []
-    startWarehouse ='A'
+    trips =[]
+    van = Van(1500000000,2000)
+
+    origin ='A'
+    target ='B'
     os.system('cls')
     print("          TASK 3")
     print("          ------\n")
     loadcsv2("TASK 3.csv",task3data)
 
-    for i in range(0,len(task3Warehouses)):
-        fillVan(startWarehouse,task3data,task3Warehouses,allTrips)
-        startWarehouse = chr(ord(startWarehouse)+1)
+    for i in range(0,3):
+        
+        van.resetVan()
+        planTrip(task3data,origin,target,van,task3Warehouses)
+        deliverItems(van.vanTrips,task3Warehouses,origin)
+        origin = chr(ord(origin)+1)
+        target = chr(ord(origin)+1)
 
-def fillVan(startWarehouse,task3data,task3Warehouses,allTrips):
+    return
 
-    target ='B'
-    trips = []
+def planTrip(task3data,origin,target,van,task3Warehouses):
 
-    index = getWarehousePosition(task3Warehouses,startWarehouse)  
-    for j in range(0,3):
-        van = Van(1500000000,2000)
+   for i in range(0,3):
+
+        trip = Trip(origin,target)
+
         for i in range(0,len(task3data)):
-            if startWarehouse == task3data[i][1] and target == task3data[i][2]:
-               item = createItem(task3Warehouses[index],task3data[i][0])
-               x = task3Warehouses[index].binarySearch(0,len(task3Warehouses[index].warehouseItems),item.itemNumber)
-               van.addItem(task3Warehouses[index].warehouseItems[x])
-        target = chr(ord(target)+1)
-        trips.append(van)
 
-    allTrips.append(trips)
+            if task3data[i][1]==origin and task3data[i][2]==target:
+               originIndex = getWarehousePosition(task3Warehouses,origin)
+               targetIndex = getWarehousePosition(task3Warehouses,target)
+               item = createItem(task3Warehouses[originIndex],task3data[i][0])
+               temp = copy.deepcopy(task3Warehouses[targetIndex])
+               item11 = task3Warehouses[originIndex].moveItemtoVan(item,temp)
+
+               if item11 != None:
+                  trip.addItem(van,item11)
+      
+        target = chr(ord(target)+1)
+        van.vanTrips.append(trip)
+        if target=='E':
+            break
+        
+
+   return
+
+def deliverItems(trips,task3Warehouses,origin):
+    
+    target =  chr(ord(origin)+1)
+
+    for i in range(0,len(trips)):
+
+        if trips[i].targetWarehouse == target:
+
+           print("\nWarehouse %s to %s"%(origin,target))
+           print("----------------")
+           targetIndex = getWarehousePosition(task3Warehouses,target)
+
+           for j in trips[i].tripItems:
+                task3Warehouses[targetIndex].addItem(j,False)
+
+        target = chr(ord(target)+1)
+
+
 
 def loadcsv(csvFilename,selectedWarehouse):
     try:
