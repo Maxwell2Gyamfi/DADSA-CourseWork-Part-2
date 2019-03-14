@@ -3,6 +3,7 @@ import os
 import pickle
 import copy
 days = 0 
+tripCount = 0
 class Node: 
   
     def __init__(self, data): 
@@ -156,15 +157,17 @@ class Warehouse(object):
                  %(target.warehouseName,item.itemNumber))
     
       elif item.itemWeight > target.warehouseShapes[x].storageWeight:
-          print("Van rejects item '%s', item storage weight '%s' exceeds warehouse '%s' '%s' storage capacity '%s'"
+          print("Van rejects item '%s' from warehouse %s, storage weight '%s' exceeds warehouse '%s' '%s' capacity '%s'"
                 %(item.itemNumber,
+                  self.warehouseName,
                   item.itemWeight,
                   target.warehouseName,
                   item.itemShape,
                   target.warehouseShapes[x].storageWeight))
       elif target.warehouseShapes[x].storageQuantity ==0:
-          print("Van rejects item '%s',warehouse '%s' '%s' storage quantity remaining is '%s' "
+          print("Van rejects item '%s from warehouse %s',warehouse '%s' '%s' storage quantity remaining is '%s' "
                 %(item.itemNumber,
+                  self.warehouseName,
                   target.warehouseName,
                   item.itemShape,                                             
                   target.warehouseShapes[x].storageQuantity))
@@ -391,6 +394,7 @@ def menuSelection(menuChoice,Warehouses):
         task1Warehouses = copy.deepcopy(Warehouses)
         task2Warehouses = copy.deepcopy(Warehouses)
         task3Warehouses = copy.deepcopy(Warehouses)
+        task4Warehouses = copy.deepcopy(Warehouses)
 
         print(Warehouse.overallInsurance)
 
@@ -409,6 +413,11 @@ def menuSelection(menuChoice,Warehouses):
             task3(task3Warehouses)
             input("\nPress any key to continue")
             displayResults(task3Warehouses)
+        
+        elif menuChoice ==4:
+            task4(task4Warehouses)
+            input("\nPress any key to continue")
+            displayResults(task4Warehouses)
     
 
         return menuChoice
@@ -576,7 +585,7 @@ def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 def task3(task3Warehouses):
 
     task3data = []
-    trips =[]
+    global tripCount
     van = Van(1500000000,2000)
 
     origin ='A'
@@ -594,23 +603,26 @@ def task3(task3Warehouses):
         origin = chr(ord(origin)+1)
         target = chr(ord(origin)+1)
 
+    tripCount =0
     return
 
 def planTrip(task3data,origin,target,van,task3Warehouses):
 
+   number = 0
    for i in range(0,3):
-
-        trip = Trip(origin,target)
-
+        trip = Trip(origin,target) 
         for i in range(0,len(task3data)):
-
             if task3data[i][1]==origin and task3data[i][2]==target:
+
                originIndex = getWarehousePosition(task3Warehouses,origin)
                targetIndex = getWarehousePosition(task3Warehouses,target)
                item = createItem(task3Warehouses[originIndex],task3data[i][0])
-               temp = copy.deepcopy(task3Warehouses[targetIndex])
-               item11 = task3Warehouses[originIndex].moveItemtoVan(item,temp)
 
+               if number != targetIndex:
+                   temp = copy.deepcopy(task3Warehouses[targetIndex])
+                   number = targetIndex
+
+               item11 = task3Warehouses[originIndex].moveItemtoVan(item,temp)
                if item11 != None:
                   trip.addItem(van,item11)
       
@@ -622,23 +634,86 @@ def planTrip(task3data,origin,target,van,task3Warehouses):
 
    return
 
+def task4(task4Warehouses):
+
+    task4data = []
+    van = Van(1500000000,2000)
+    
+
+    origin ='A'
+    target ='B'
+    os.system('cls')
+    print("          TASK 4")
+    print("          ------\n")
+    loadcsv2("TASK 3.csv",task4data)
+
+
+    for i in range(0,3):        
+        van.resetVan()
+        shapesFilter =[]
+        print("\nWarehouse %s to %s delivery"%(origin,target))
+        print("---------------------------")
+        planTrip(task4data,origin,target,van,task4Warehouses)
+        shapesFilter = seperateTripShapes(van)
+        for i in shapesFilter:
+           x = getWarehousePosition(task4Warehouses,target)
+           if len(i) > 0:
+            deliverByShape(i,task4Warehouses[x]) 
+
+        origin = chr(ord(origin)+1)
+        target = chr(ord(origin)+1)
+
+def seperateTripShapes(van):
+
+    rectangle =[]
+    sphere =[]
+    pyramid =[]
+    square =[]
+    allShapes=[]
+
+    for i in van.vanTrips:
+        for j in i.tripItems:
+            if j.itemShape == 'Rectangle':
+               rectangle.append(j)
+            elif j.itemShape == 'Sphere':
+                sphere.append(j)
+            elif j.itemShape == 'Pyramid':   
+                pyramid.append(j)
+            else:
+                square.append(j)
+
+    allShapes.append(rectangle)
+    allShapes.append(sphere )
+    allShapes.append(pyramid)
+    allShapes.append(square)
+    
+    return allShapes
+
+
 def deliverItems(trips,task3Warehouses,origin):
     
+    global tripCount
+
     target =  chr(ord(origin)+1)
 
     for i in range(0,len(trips)):
 
-        if trips[i].targetWarehouse == target:
-
-           print("\nWarehouse %s to %s"%(origin,target))
-           print("----------------")
+        if trips[i].targetWarehouse == target: 
+           tripCount+=1 
+           print("\nTrip %s: Warehouse %s to %s"%(tripCount,origin,target))
+           print("------  ----------------")           
            targetIndex = getWarehousePosition(task3Warehouses,target)
 
-           for j in trips[i].tripItems:
+           for j in trips[i].tripItems:               
                 task3Warehouses[targetIndex].addItem(j,False)
 
         target = chr(ord(target)+1)
 
+def deliverByShape(shapesItems,targetWarehouse):
+
+    print("\n%s Items delivery: "%(shapesItems[0].itemShape))
+    for i in shapesItems:
+        targetWarehouse.addItem(i,False)
 
 
 def loadcsv(csvFilename,selectedWarehouse):
