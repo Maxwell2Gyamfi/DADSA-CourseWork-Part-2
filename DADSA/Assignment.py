@@ -2,7 +2,7 @@ import csv
 import os
 import pickle
 import copy
-
+deliveryDays =0
 class Warehouse(object):
 
     overallInsurance =8000000000
@@ -248,6 +248,7 @@ class Van():
              origin.increaseShapeValue(temp)
              del origin.warehouseItems[position]
              target.warehouseShapes[x].decreaseStorageWeight()
+             print("Van picks-up item %s "%(item.itemNumber))
              return temp
 
     def resetVan(self):
@@ -452,17 +453,24 @@ def task2(task2Warehouses):
     print("               ------------------------------")
     task2data =[]
     loadcsv2('TASK 2(1).csv',task2data)
+    global deliveryDays
 
     van  = Van(1500000000,2000)
     names = getWarehousesNames(task2Warehouses)
 
     for i in range(0,len(names)-1):
-        planTrip(i,i+1,task2data,task2Warehouses,van)
-        deliverItems(van,task2Warehouses[i+1])
+        print("\n---------  - -------")
+        print("WAREHOUSE: %s pickups"%(names[i]))
+        print("---------  - -------")
+        planTrip(i,i+1,task2data,task2Warehouses,van)      
+        deliverItems(van,task2Warehouses,i+1)
         van.resetVan()
+
+    deliveryDays=0
 
 def planTrip(startPos,endPos,csvData,Warehouses,van):
 
+    global deliveryDays
     flag =0
     names = getWarehousesNames(Warehouses)
 
@@ -474,12 +482,12 @@ def planTrip(startPos,endPos,csvData,Warehouses,van):
             fromWarehouse = csvData[i][1]
             toWarehouse = csvData[i][2]
 
-            if toWarehouse == names[endPos]:
+            if fromWarehouse == names[startPos] and toWarehouse == names[endPos]:
                 originIndex = getWarehousePos(Warehouses,fromWarehouse)
                 targetIndex = getWarehousePos(Warehouses,toWarehouse)
 
                 item = createItem(Warehouses[originIndex],itemNumber)
-                if flag != targetIndex:
+                if flag != targetIndex:                 
                        fakeWarehouse = copy.deepcopy(Warehouses[targetIndex])
                        flag = targetIndex
                 validItem = Warehouses[originIndex].moveItemtoVan(item,van,fakeWarehouse)
@@ -497,12 +505,18 @@ def createItem(targetWarehouse,itemID):
     item = targetWarehouse.warehouseItems[i]
     return item
 
-def deliverItems(van,target):
-
+def deliverItems(van,Warehouses,position):
+    global deliveryDays
+    names = getWarehousesNames(Warehouses)
     for i in range (0,len(van.vanTrips)):
-        if van.vanTrips[i].targetWarehouse == target:
-            for i in van.vanTrips[i].tripItems:
-                target.addItem(i,False)           
+        if van.vanTrips[i].targetWarehouse == names[position]:
+            if len(van.vanTrips[i].tripItems) > 0:
+                deliveryDays+=1
+                print("Day: %s"%(deliveryDays))
+                for x in van.vanTrips[i].tripItems:
+                    Warehouses[position].addItem(x,False)  
+        position+=1
+        
     return
 
 def getWarehousesNames(Warehouses):
