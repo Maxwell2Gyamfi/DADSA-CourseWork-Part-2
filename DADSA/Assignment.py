@@ -17,22 +17,30 @@ class Warehouse(object):
     def addItem(self,item,loadFromCsv):
 
         for i in self.warehouseShapes:
-            if item.itemShape in self.warehouseShapes:
+            if item.itemShape == i.shapeName:
                 if item.itemPrice > self.remainingInsurance:
                     print("Item rejected, item %s value exceeds warehouse %s remaining insurance"
                                %(item.itemNumber,
                                self.warehouseName))
-                elif item.itemWeight > i.storageWeight and i.storageQuantity ==0:
+                    return False
+                elif item.itemWeight > i.storageWeight:
                     if i.storageQuantity ==0:
                         print("Item rejected, warehouse %s %s remaining storage quantity is %s"
                               %(self.warehouseName,
-                                i.itemShape,
+                                i.shapeName,
                                 i.storageQuantity))
+                        
                     else:
                         print("Items rejected, item storage weight exceeds warehouse %s %s capacity %s"
                               %(self.warehouseName,
                                i.shapeName,
                                i.storageWeight))
+                    return False
+                elif i.storageQuantity ==0:
+                        print("Item rejected, warehouse %s %s remaining storage quantity is %s"
+                              %(self.warehouseName,
+                                i.shapeName,
+                                i.storageQuantity))
                 else:
                     self.warehouseItems.append(item)
                     i.decreaseStorageWeight()
@@ -41,7 +49,7 @@ class Warehouse(object):
                           print("Item %s added to Warehouse %s"
                           %(item.itemNumber,
                             self.warehouseName))
-                          return True
+                    return True
         print("Item rejected, warehouse %s cannot accomodate %s shapes"
                    %(self.warehouseName,
                      item.itemShape))
@@ -114,7 +122,7 @@ class Warehouse(object):
             print(i)
 
     def addShape(self,shapeName,weight,quantity):
-        temp = storageShapes(shapeName,weight,quantity) 
+        temp = itemShapes(shapeName,weight,quantity) 
         self.warehouseShapes.append(temp)
 
     def increaseShapeValue(self,item):
@@ -206,7 +214,7 @@ class Van():
             self.decreaseRemainingWeightCapacity(vanItem.itemWeight)
             print("Van picks-up item %s "%(vanItem.itemNumber))
 
-    def addItemtoTarget(self,target,item,origin):
+    def addItemtoTarget(self,item,target,origin):
         x =0  
         for i in range(0,len(target.warehouseShapes)):
           if target.warehouseShapes[i].shapeName == item.itemShape:
@@ -219,7 +227,7 @@ class Van():
         elif item.itemWeight > target.warehouseShapes[x].storageWeight:
           print("Van rejects item '%s' from warehouse %s, storage weight '%s' exceeds warehouse '%s' '%s' capacity '%s'"
                 %(item.itemNumber,
-                  self.warehouseName,
+                  origin.warehouseName,
                   item.itemWeight,
                   target.warehouseName,
                   item.itemShape,
@@ -227,7 +235,7 @@ class Van():
         elif target.warehouseShapes[x].storageQuantity ==0:
           print("Van rejects item '%s from warehouse %s',warehouse '%s' '%s' storage quantity remaining is '%s' "
                 %(item.itemNumber,
-                  self.warehouseName,
+                  origin.warehouseName,
                   target.warehouseName,
                   item.itemShape,                                             
                   target.warehouseShapes[x].storageQuantity))
@@ -340,6 +348,37 @@ def readcsvFiletoWarehouse(Warehouses):
     loadcsv('Warehouse C.csv',Warehouses[2])
     loadcsv('Warehouse D.csv',Warehouses[3])
 
+def loadcsv(csvFilename,selectedWarehouse):
+    try:
+        with open(csvFilename) as csvFile:
+                  reader = csv.reader(csvFile)
+                  next(reader,None)
+                  for itemnumber,itemdescription,itemprice,itemShape,itemWeigth in reader:                  
+                      newItem = Item(int(itemnumber),itemdescription,int(itemprice),itemShape,int(itemWeigth))                                        
+                      selectedWarehouse.addItem(newItem,True)                                      
+    except FileNotFoundError:
+          print(FileNotFoundError)
+    return
+
+def loadcsv2(csvFilename,task2data):
+        
+    try:
+        with open(csvFilename) as csvFile:
+                  reader = csv.reader(csvFile)
+                  next(reader,None)
+                  for itemNumber,selectedWarehouse,targetWarehouse in reader:
+                      temp =[]
+                      itemNumber = int(itemNumber)
+                      temp.append(itemNumber)
+                      temp.append(selectedWarehouse)
+                      temp.append(targetWarehouse)                      
+                      task2data.append(temp)
+
+    except FileNotFoundError:
+          print(FileNotFoundError)
+    return
+
+
 def mainMenu():
 
     os.system('cls')
@@ -381,6 +420,14 @@ def task1(task1Warehouses):
         createTempWarehouse(tempWarehouse)
         loadItemsToWarehouseA(tempWarehouse,task1Warehouses)     
 
+def createTempWarehouse(tempWarehouse):
+
+    tempWarehouse.addShape('Rectangle',2000,10)
+    tempWarehouse.addShape('Square',2000,10)
+    tempWarehouse.addShape('Sphere',2000,10)
+    tempWarehouse.addShape('Pyramid',2000,10)
+    loadcsv('DATA TO INSERT INTO WAREHOUSE A.csv',tempWarehouse)
+
 def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 
     itemAdded = True
@@ -391,6 +438,8 @@ def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 
     for i in range(0,len(tempWarehouse.warehouseItems)):
         for j in range(0,4):
+            if tempWarehouse.warehouseItems[i].itemNumber== 92387:
+                print("wtf")
             itemAdded = task1Warehouses[j].addItem(tempWarehouse.warehouseItems[i],False)
             if itemAdded == True:                
                 break 
@@ -408,38 +457,45 @@ def task2(task2Warehouses):
     names = getWarehousesNames(task2Warehouses)
 
     for i in range(0,len(names)-1):
-        planTrip(i,i+1,task2data,task2Warehouses)
+        planTrip(i,i+1,task2data,task2Warehouses,van)
         deliverItems(van,task2Warehouses[i+1])
         van.resetVan()
 
-def planTrip(startPos,endPos,csvData,Warehouses):
+def planTrip(startPos,endPos,csvData,Warehouses,van):
 
     flag =0
     names = getWarehousesNames(Warehouses)
 
-    for i in range(startPos,len(names)):
+    for x in range(startPos,len(names)-1):
         trip = Trip(names[startPos],names[endPos])
         for i in range(0,len(csvData)):
 
-            itemNumber = csvdata[i][0]
-            fromWarehouse = csvdata[i][1]
-            toWarehouse = csvdata[i][2]
+            itemNumber = csvData[i][0]
+            fromWarehouse = csvData[i][1]
+            toWarehouse = csvData[i][2]
 
-            originIndex = getWarehousePos(Warehouses,start)
-            targetIndex = getWarehousePos(Warehouses,end)
+            if toWarehouse == names[endPos]:
+                originIndex = getWarehousePos(Warehouses,fromWarehouse)
+                targetIndex = getWarehousePos(Warehouses,toWarehouse)
 
-            item = createItem(Warehouses[originIndex],itemNumber)
-            if flag != targetIndex:
-                   fakeWarehouse = copy.deepcopy(Warehouses[targetIndex])
-                   flag = targetIndex
-            validItem = Warehouses[originIndex].moveItemtoVan(item,temp)
-            if validItem != None:
-                  trip.addItem(van,validItem)
+                item = createItem(Warehouses[originIndex],itemNumber)
+                if flag != targetIndex:
+                       fakeWarehouse = copy.deepcopy(Warehouses[targetIndex])
+                       flag = targetIndex
+                validItem = Warehouses[originIndex].moveItemtoVan(item,van,fakeWarehouse)
+                if validItem != None:
+                      trip.addItem(van,validItem)
 
         endPos+=1
         van.vanTrips.append(trip)
 
     return
+
+def createItem(targetWarehouse,itemID):
+   
+    i = targetWarehouse.binarySearch(0,len(targetWarehouse.warehouseItems)-1,itemID)
+    item = targetWarehouse.warehouseItems[i]
+    return item
 
 def deliverItems(van,target):
 
@@ -502,3 +558,33 @@ def displayResults(Warehouses):
                  Warehouses[warehouseChoice-1].displayWarehouse()
                  print("\nDisplay another warehouse?(Y/N): ")
                  displayAnother = getValidYesOrNo()
+
+def getValidYesOrNo():
+
+    flag =True
+    while flag:
+        yes_or_no = input(" ")
+        if yes_or_no.upper() == 'Y' or yes_or_no.upper() == 'N':
+           return yes_or_no.upper()
+        else:
+          print("Wrong input,enter Y OR N: ")
+
+def getValidInteger(minimum,maximum):
+
+        flag =True
+        while flag == True:
+             number= input("")   
+             try:
+                if number.isdigit:
+                   number = int(number)
+             except ValueError:
+                   print('You didnt input an input an integer,try again: (%d-%d))' % (minimum,maximum))
+             else:           
+                 if number < minimum or number >maximum:
+                    print('The entered number is out of range, try again: (%d-%d))' % (minimum,maximum))
+                 else:
+                    flag = False       
+        return number
+
+
+main()
