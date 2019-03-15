@@ -57,14 +57,13 @@ class LinkedList:
 
 
 class Item():
+    
+    def __init__(self,itemNumber=None,itemDescription=None,
+                  itemPrice=None,itemShape = None,itemWeight =None):
 
-    #default constructor
-    def __init__(self,item_number=None,itemDescription=None,
-                  item_price=None,itemShape = None,itemWeight =None):
-
-        self.itemNumber = item_number
+        self.itemNumber = itemNumber
         self.itemDescription =itemDescription
-        self.itemPrice = item_price
+        self.itemPrice = itemPrice
         self.itemShape = itemShape
         self.itemWeight = itemWeight
  
@@ -201,7 +200,7 @@ class Warehouse(object):
             print(i)
 
     def addShape(self,shapeName,weight,quantity):
-        temp = storageShapes(shapeName,weight,quantity) 
+        temp = itemShapes(shapeName,weight,quantity) 
         self.warehouseShapes.append(temp)
 
     def increaseShapeValue(self,item):
@@ -252,7 +251,43 @@ class Van():
             self.decreaseRemainingInsurance(vanItem.itemPrice)
             self.decreaseRemainingWeightCapacity(vanItem.itemWeight)
             print("Van picks-up item %s "%(vanItem.itemNumber))
+
+    def addItemtoTarget(self,target,item):
+        x =0  
+        for i in range(0,len(target.warehouseShapes)):
+          if target.warehouseShapes[i].shapeName == item.itemShape:
+              x =i
+              break
+        if item.itemPrice > target.remainingInsurance:
+          print("Van rejects item '%s', item price exceeds warehouse '%s' remaining insurance"
+                 %(target.warehouseName,item.itemNumber))
     
+        elif item.itemWeight > target.warehouseShapes[x].storageWeight:
+          print("Van rejects item '%s' from warehouse %s, storage weight '%s' exceeds warehouse '%s' '%s' capacity '%s'"
+                %(item.itemNumber,
+                  self.warehouseName,
+                  item.itemWeight,
+                  target.warehouseName,
+                  item.itemShape,
+                  target.warehouseShapes[x].storageWeight))
+        elif target.warehouseShapes[x].storageQuantity ==0:
+          print("Van rejects item '%s from warehouse %s',warehouse '%s' '%s' storage quantity remaining is '%s' "
+                %(item.itemNumber,
+                  self.warehouseName,
+                  target.warehouseName,
+                  item.itemShape,                                             
+                  target.warehouseShapes[x].storageQuantity))
+        else:
+          position = 0    
+          position = self.binarySearch(0,len(self.warehouseItems),item.itemNumber)
+          if position >= 0:
+             temp = self.warehouseItems[position]
+             self.increaseWarehouseInsurance(temp.itemPrice)
+             self.increaseShapeValue(temp)
+             del self.warehouseItems[position]
+             target.warehouseShapes[x].decreaseStorageWeight()
+             return temp
+
     def resetVan(self):
         self.remainingInsurance = 1500000000
         self.remainingWeightCapacity = 2000
@@ -300,7 +335,7 @@ class Trip():
     def __repr__(self):
         return "%s %s"%(self.startWarehouse,self.targetWarehouse)
 
-class storageShapes():
+class itemShapes():
     
     def __init__(self,shapeName=None,storageWeight=None,storageQuantity=None):
         self.shapeName = shapeName

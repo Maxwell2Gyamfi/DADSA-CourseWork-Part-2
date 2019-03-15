@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>a591d3cd-3c50-4aae-addc-c996520cbdcf</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>DADSA_Part2.py</StartupFile>
+    <StartupFile>Assignment.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assignment.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DADSA_CODE.py" />
     <Compile Include="DADSA_Part2.py">
       <SubType>Code</SubType>
