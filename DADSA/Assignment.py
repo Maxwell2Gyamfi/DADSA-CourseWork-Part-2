@@ -512,7 +512,8 @@ def deliverItems(van,Warehouses,position):
         if van.vanTrips[i].targetWarehouse == names[position]:
             if len(van.vanTrips[i].tripItems) > 0:
                 deliveryDays+=1
-                print("Day: %s"%(deliveryDays))
+                print("\nDay: %s"%(deliveryDays))
+                print("---  -")
                 for x in van.vanTrips[i].tripItems:
                     Warehouses[position].addItem(x,False)  
         position+=1
