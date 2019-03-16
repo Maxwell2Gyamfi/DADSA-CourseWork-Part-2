@@ -13,6 +13,7 @@ class Warehouse(object):
         self.remainingInsurance = remainingInsurance
         self.warehouseItems =[]
         self.warehouseShapes=[]
+        self.garage =[]
 
     def addItem(self,item,loadFromCsv):
 
@@ -25,22 +26,26 @@ class Warehouse(object):
                     return False
                 elif item.itemWeight > i.storageWeight:
                     if i.storageQuantity ==0:
-                        print("Item rejected, warehouse %s %s remaining storage quantity is %s"
-                              %(self.warehouseName,
+                        print("Item %s rejected, warehouse %s %s remaining storage quantity is %s"
+                              %(item.itemNumber,
+                                self.warehouseName,
                                 i.shapeName,
                                 i.storageQuantity))
                         
                     else:
-                        print("Items rejected, item storage weight exceeds warehouse %s %s capacity %s"
-                              %(self.warehouseName,
-                               i.shapeName,
-                               i.storageWeight))
+                        print("Items %s rejected, item storage weight exceeds warehouse %s %s capacity %s"
+                              %(item.itemNumber,
+                                self.warehouseName,
+                                i.shapeName,
+                                i.storageWeight))
                     return False
                 elif i.storageQuantity ==0:
-                        print("Item rejected, warehouse %s %s remaining storage quantity is %s"
-                              %(self.warehouseName,
+                        print("Item %s rejected, warehouse %s %s remaining storage quantity is %s"
+                              %(item.itemNumber,
+                                self.warehouseName,
                                 i.shapeName,
                                 i.storageQuantity))
+                        return False
                 else:
                     self.warehouseItems.append(item)
                     i.decreaseStorageWeight()
@@ -50,8 +55,9 @@ class Warehouse(object):
                           %(item.itemNumber,
                             self.warehouseName))
                     return True
-        print("Item rejected, warehouse %s cannot accomodate %s shapes"
-                   %(self.warehouseName,
+        print("Item %s rejected, warehouse %s cannot accomodate %s shapes"
+                   %(item.itemNumber,
+                     self.warehouseName,
                      item.itemShape))
         return False
 
@@ -281,6 +287,7 @@ class Trip():
         self.startWarehouse = startWarehouse
         self.targetWarehouse = targetWarehouse
         self.tripItems=[]
+        self.nextTripItems =[]
 
     def addItem(self,van,item):
             self.tripItems.append(item)
@@ -298,8 +305,7 @@ def main():
     menuChoice = 0
     Warehouses = createWarehouses()
     readcsvFiletoWarehouse(Warehouses)
-    
-  
+      
     while(menuChoice!=5):     
         mainMenu()
         menuChoice = getValidInteger(1,5)
@@ -411,6 +417,9 @@ def menuSelection(menuChoice,Warehouses):
             input("\nPress any key to continue")
             displayResults(task1Warehouses)
 
+        elif menuChoice ==3:
+            task3(task3Warehouses)
+
 
         
         return menuChoice
@@ -439,8 +448,6 @@ def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
 
     for i in range(0,len(tempWarehouse.warehouseItems)):
         for j in range(0,4):
-            if tempWarehouse.warehouseItems[i].itemNumber== 92387:
-                print("wtf")
             itemAdded = task1Warehouses[j].addItem(tempWarehouse.warehouseItems[i],False)
             if itemAdded == True:                
                 break 
@@ -532,6 +539,45 @@ def getWarehousePos(Warehouse,targetName):
         if Warehouse[i].warehouseName == targetName:
            break
     return i
+
+def task3(task3Warehouses):
+
+    task3data = []
+    alltrips = []
+    global tripCount
+    van = Van(1500000000,2000)
+    names = getWarehousesNames(task3Warehouses)
+
+    os.system('cls')
+    print("          TASK 3")
+    print("          ------\n")
+    loadcsv2("TASK 3.csv",task3data)
+
+    for i in range(0,len(names)-1):      
+        planTrip(i,i+1,task3data,task3Warehouses,van)
+        deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
+        deliverItems2(van.vanTrips,task3Warehouses[i+1])
+
+def deliverItems2(trips,selectedWarehouse):
+    for i in trips:
+        if i.targetWarehouse == selectedWarehouse.warehouseName:
+            for x in i.tripItems:
+                selectedWarehouse.addItem(x,False)
+            break
+
+    selectedWarehouse.garage.append(trips[1:])
+
+def deliverGarageItems(Warehouse,target):
+    if len(Warehouse.garage) > 0:
+        for i in range(0,len(Warehouse.garage)):
+            if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:
+               for x in Warehouse.garage[i][0].tripItems:
+                    target.addItem(x,False)
+            del Warehouse.garage[i][0]
+            break
+   
+    return
+
 
 def displayWarehouses(Warehouses):
     

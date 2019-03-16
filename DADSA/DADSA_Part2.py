@@ -623,8 +623,6 @@ def task3(task3Warehouses):
     global tripCount
     van = Van(1500000000,2000)
 
-    origin ='A'
-    target ='B'
     os.system('cls')
     print("          TASK 3")
     print("          ------\n")
