@@ -254,7 +254,7 @@ class Van():
              origin.increaseShapeValue(temp)
              del origin.warehouseItems[position]
              target.warehouseShapes[x].decreaseStorageWeight()
-             print("Van picks-up item %s "%(item.itemNumber))
+             print("Van picks-up item %s for warehouse %s "%(item.itemNumber,target.warehouseName))
              return temp
 
     def resetVan(self):
@@ -419,7 +419,8 @@ def menuSelection(menuChoice,Warehouses):
 
         elif menuChoice ==3:
             task3(task3Warehouses)
-
+            input("\nPress any key to continue")
+            displayResults(task3Warehouses)
 
         
         return menuChoice
@@ -558,7 +559,9 @@ def task3(task3Warehouses):
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
         planTrip(i,i+1,task3data,task3Warehouses,van)
-        print("\nVan moves to warehouse %s"%(names[i+1]))
+        if i > 0:
+            print("Van picks other warehouses items from garage")
+        print("\nVan moves to warehouse %s\n"%(names[i+1]))
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
         deliverItems2(van.vanTrips,task3Warehouses[i+1])
         van.resetVan()
@@ -569,17 +572,18 @@ def deliverItems2(trips,selectedWarehouse):
             for x in i.tripItems:
                 selectedWarehouse.addItem(x,False)
             break
-
+    if selectedWarehouse.warehouseName !='D':
+        print("Van leaves other warehouses items in garage")
     selectedWarehouse.garage.append(trips[1:])
 
 def deliverGarageItems(Warehouse,target):
-    if len(Warehouse.garage) > 0:
+    if len(Warehouse.garage) > 0:        
         for i in range(0,len(Warehouse.garage)):
             if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:               
                for x in Warehouse.garage[i][0].tripItems:
                     target.addItem(x,False)         
                if target.warehouseName !='D':
-                    del Warehouse.garage[i][0]
+                    del Warehouse.garage[i][0]                   
                     target.garage.extend(Warehouse.garage)
                     break
    
