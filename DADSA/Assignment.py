@@ -553,14 +553,19 @@ def task3(task3Warehouses):
     print("          ------\n")
     loadcsv2("TASK 3.csv",task3data)
 
-    for i in range(0,len(names)-1):      
+    for i in range(0,len(names)-1):        
+        print("\n---------  - -------")
+        print("WAREHOUSE: %s pickups"%(names[i]))
+        print("---------  - -------")
         planTrip(i,i+1,task3data,task3Warehouses,van)
+        print("\nVan moves to warehouse %s"%(names[i+1]))
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
         deliverItems2(van.vanTrips,task3Warehouses[i+1])
+        van.resetVan()
 
 def deliverItems2(trips,selectedWarehouse):
     for i in trips:
-        if i.targetWarehouse == selectedWarehouse.warehouseName:
+        if i.targetWarehouse == selectedWarehouse.warehouseName:          
             for x in i.tripItems:
                 selectedWarehouse.addItem(x,False)
             break
@@ -570,11 +575,13 @@ def deliverItems2(trips,selectedWarehouse):
 def deliverGarageItems(Warehouse,target):
     if len(Warehouse.garage) > 0:
         for i in range(0,len(Warehouse.garage)):
-            if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:
+            if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:               
                for x in Warehouse.garage[i][0].tripItems:
-                    target.addItem(x,False)
-            del Warehouse.garage[i][0]
-            break
+                    target.addItem(x,False)         
+               if target.warehouseName !='D':
+                    del Warehouse.garage[i][0]
+                    target.garage.extend(Warehouse.garage)
+                    break
    
     return
 
