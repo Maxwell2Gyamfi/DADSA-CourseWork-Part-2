@@ -15,7 +15,7 @@ class Warehouse(object):
         self.warehouseItems =[]
         self.warehouseShapes=[]
         self.garage =[]
-        self.leftItems = []
+        self.leftItemsTrip = []
 
     def addItem(self,item,loadFromCsv):
 
@@ -288,8 +288,7 @@ class Trip():
     def __init__(self,startWarehouse=None,targetWarehouse=None):
         self.startWarehouse = startWarehouse
         self.targetWarehouse = targetWarehouse
-        self.tripItems=[]
-        self.nextTripItems =[]
+        self.tripItems=[]        
 
     def addItem(self,van,item):
             self.tripItems.append(item)
@@ -571,7 +570,11 @@ def task3(task3Warehouses):
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1])
         trip+=1
-        van.resetVan()
+        van.resetVan() 
+
+    deliverLeftOvers(task3Warehouses)
+
+
 
 def deliverItems2(trips,selectedWarehouse):
     deliveredItems =[]
@@ -595,22 +598,30 @@ def deliverGarageItems(Warehouse,target):
                if target.warehouseName !='D':
                     del Warehouse.garage[i][0]                   
                     target.garage.extend(Warehouse.garage)
-                    break
-   
+                    break   
     return
 
 def removeItemsSameDay(deliveredItems,targetWarehouse,van):
    
     dev = 0
+    leftItems =[]
+
     for i in van.vanTrips:  
        for x in range(0,len(i.tripItems)):         
            if i.tripItems[x].itemNumber == deliveredItems[dev]:
-               print("Van drops item %s"%(deliveredItems[dev])) 
+               print("Van drops item %s, same day delivery not allowed"%(deliveredItems[dev])) 
                dev+=1
-               i.tripItems.pop(x) 
-               if x == len(deliveredItems):
+               item = i.tripItems.pop(x)
+               leftItems.append(item)
+               if dev == len(deliveredItems):
+                   trip = Trip(i.startWarehouse,i.targetWarehouse)
+                   trip.tripItems.extend(leftItems)
                    return
                     
+def deliverLeftOvers(Warehouses):
+    for i in range(0,len(Warehouses)):
+        if Warehouses[i].leftItemsTrip > 0:
+            deliverItems2(Warehouses[i].leftItemsTrip)
 
 def displayWarehouses(Warehouses):
     
