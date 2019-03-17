@@ -616,12 +616,13 @@ def removeItemsSameDay(deliveredItems,targetWarehouse,van):
                if dev == len(deliveredItems):
                    trip = Trip(i.startWarehouse,i.targetWarehouse)
                    trip.tripItems.extend(leftItems)
+                   targetWarehouse.leftItemsTrip.append(trip)
                    return
                     
 def deliverLeftOvers(Warehouses):
     for i in range(0,len(Warehouses)):
-        if Warehouses[i].leftItemsTrip > 0:
-            deliverItems2(Warehouses[i].leftItemsTrip)
+        if len(Warehouses[i].leftItemsTrip) > 0:
+            deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[3])
 
 def displayWarehouses(Warehouses):
     
