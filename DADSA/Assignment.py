@@ -135,13 +135,15 @@ class Warehouse(object):
 
     def increaseShapeValue(self,item):
         for i in range(0,len(self.warehouseShapes)):
-            if(item.itemShape == self.warehouseShapes[i]):
+            if(item.itemShape == self.warehouseShapes[i].shapeName):
                 self.warehouseShapes[i].increaseStorageWeight()
+                break
     
     def decreaseShapeValue(self,item):
         for i in range(0,len(self.warehouseShapes)):
-            if(item.itemShape == self.warehouseShapes[i]):
+            if(item.itemShape == self.warehouseShapes[i].shapeName):
                 self.warehouseShapes[i].decreaseStorageWeight()
+                break
 
     def increaseWarehouseInsurance(self,amount):
         self.remainingInsurance+=amount
@@ -251,15 +253,9 @@ class Van():
           position = 0    
           position = origin.binarySearch(0,len(origin.warehouseItems),item.itemNumber)
           if position >= 0:
-             temp = origin.warehouseItems[position]
+             temp = origin.warehouseItems.pop(position)
              origin.increaseWarehouseInsurance(temp.itemPrice)
-             origin.increaseShapeValue(temp)
-             
-             for i in range(0,len(origin.warehouseShapes)):
-                 if origin.warehouseShapes[i].shapeName == item.itemShape:
-                     origin.warehouseShapes[i].increaseStorageWeight
-
-             del origin.warehouseItems[position]
+             origin.increaseShapeValue(temp)             
              target.warehouseShapes[x].decreaseStorageWeight()
              print("Van picks-up item %s for warehouse %s "%(item.itemNumber,target.warehouseName))
              return temp
@@ -460,8 +456,7 @@ def loadItemsToWarehouseA(tempWarehouse,task1Warehouses):
                 break 
     return  
 
-def task2(task2Warehouses):
-    
+def task2(task2Warehouses):    
     os.system('cls')
     print("\n\n               DAYS TO RELOCATE TASK 2 ITEMS")
     print("               ------------------------------")
@@ -483,7 +478,6 @@ def task2(task2Warehouses):
     deliveryDays=0
 
 def planTrip(startPos,endPos,csvData,Warehouses,van):
-
     global deliveryDays
     flag =0
     names = getWarehousesNames(Warehouses)
@@ -513,8 +507,7 @@ def planTrip(startPos,endPos,csvData,Warehouses,van):
 
     return
 
-def createItem(targetWarehouse,itemID):
-   
+def createItem(targetWarehouse,itemID):  
     i = targetWarehouse.binarySearch(0,len(targetWarehouse.warehouseItems)-1,itemID)
     item = targetWarehouse.warehouseItems[i]
     return item
@@ -549,10 +542,10 @@ def getWarehousePos(Warehouse,targetName):
 
 def task3(task3Warehouses):
 
+    deliveredItems = []
     task3data = []
     trip = 0
-    days =0
-    deliveredItems = []
+    days =0    
     van = Van(1500000000,2000)
     names = getWarehousesNames(task3Warehouses)
 
@@ -587,7 +580,6 @@ def task3(task3Warehouses):
 
 
 def deliverItems2(trips,selectedWarehouse,lastWarehouse):
-
     deliveredItems =[]
     for i in trips:
         if i.targetWarehouse == selectedWarehouse.warehouseName:          
