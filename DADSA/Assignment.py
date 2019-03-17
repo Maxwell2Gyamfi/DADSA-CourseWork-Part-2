@@ -254,6 +254,11 @@ class Van():
              temp = origin.warehouseItems[position]
              origin.increaseWarehouseInsurance(temp.itemPrice)
              origin.increaseShapeValue(temp)
+             
+             for i in range(0,len(origin.warehouseShapes)):
+                 if origin.warehouseShapes[i].shapeName == item.itemShape:
+                     origin.warehouseShapes[i].increaseStorageWeight
+
              del origin.warehouseItems[position]
              target.warehouseShapes[x].decreaseStorageWeight()
              print("Van picks-up item %s for warehouse %s "%(item.itemNumber,target.warehouseName))
@@ -561,7 +566,6 @@ def task3(task3Warehouses):
             days+=1
             print("\nDay:",days)
             print("---  -")
-
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
@@ -571,7 +575,6 @@ def task3(task3Warehouses):
             removeItemsSameDay(deliveredItems,task3Warehouses[i],van)
         if i > 0:
             print("Van picks other warehouses items from garage")
-
         print("\nVan moves to warehouse %s\n"%(names[i+1]))
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1],names[-1])
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1],names[-1])
@@ -581,7 +584,6 @@ def task3(task3Warehouses):
     print("\nDay:",days+1)
     print("---  -")
     deliverLeftOvers(task3Warehouses)
-
 
 
 def deliverItems2(trips,selectedWarehouse,lastWarehouse):
