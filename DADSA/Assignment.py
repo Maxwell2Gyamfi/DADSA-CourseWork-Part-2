@@ -573,8 +573,8 @@ def task3(task3Warehouses):
             print("Van picks other warehouses items from garage")
 
         print("\nVan moves to warehouse %s\n"%(names[i+1]))
-        deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
-        deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1])
+        deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1],names[-1])
+        deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1],names[-1])
         trip+=1
         van.resetVan()
         
@@ -584,7 +584,7 @@ def task3(task3Warehouses):
 
 
 
-def deliverItems2(trips,selectedWarehouse):
+def deliverItems2(trips,selectedWarehouse,lastWarehouse):
 
     deliveredItems =[]
     for i in trips:
@@ -593,18 +593,18 @@ def deliverItems2(trips,selectedWarehouse):
                 selectedWarehouse.addItem(x,False)
                 deliveredItems.append(x.itemNumber)
             break
-    if selectedWarehouse.warehouseName !='D':
+    if selectedWarehouse.warehouseName !=lastWarehouse:
         print("Van leaves other warehouses items in garage")
     selectedWarehouse.garage.append(trips[1:])
     return deliveredItems
 
-def deliverGarageItems(Warehouse,target):
+def deliverGarageItems(Warehouse,target,lastWarehouse):
     if len(Warehouse.garage) > 0:        
         for i in range(0,len(Warehouse.garage)):
             if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:               
                for x in Warehouse.garage[i][0].tripItems:
                     target.addItem(x,False)         
-               if target.warehouseName !='D':
+               if target.warehouseName !=lastWarehouse:
                     del Warehouse.garage[i][0]                   
                     target.garage.extend(Warehouse.garage)
                     break   
@@ -638,8 +638,8 @@ def deliverLeftOvers(Warehouses):
             for x in Warehouses[i].leftItemsTrip:
                 for y in x.tripItems:
                     print("Van picks-up item %s"%(y.itemNumber))
-            print("\nVan moves to warehouse D")
-            deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[3])
+            print("\nVan moves to warehouse %s"%(x.targetWarehouse))
+            deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[3],Warehouses[-1].warehouseName)
 
 def displayWarehouses(Warehouses):
     
