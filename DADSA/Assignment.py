@@ -546,6 +546,7 @@ def task3(task3Warehouses):
 
     task3data = []
     trip = 0
+    days =0
     deliveredItems = []
     van = Van(1500000000,2000)
     names = getWarehousesNames(task3Warehouses)
@@ -555,7 +556,12 @@ def task3(task3Warehouses):
     print("          ------\n")
     loadcsv2("TASK 3.csv",task3data)
 
-    for i in range(0,len(names)-1):        
+    for i in range(0,len(names)-1): 
+        if trip%2==0:
+            days+=1
+            print("\nDay:",days)
+            print("---  -")
+
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
@@ -570,13 +576,16 @@ def task3(task3Warehouses):
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1])
         trip+=1
-        van.resetVan() 
-
+        van.resetVan()
+        
+    print("\nDay:",days+1)
+    print("---  -")
     deliverLeftOvers(task3Warehouses)
 
 
 
 def deliverItems2(trips,selectedWarehouse):
+
     deliveredItems =[]
     for i in trips:
         if i.targetWarehouse == selectedWarehouse.warehouseName:          
@@ -622,6 +631,14 @@ def removeItemsSameDay(deliveredItems,targetWarehouse,van):
 def deliverLeftOvers(Warehouses):
     for i in range(0,len(Warehouses)):
         if len(Warehouses[i].leftItemsTrip) > 0:
+            print("\nVan starts at Warehouse %s"%(Warehouses[i].warehouseName))
+            print("---------  - -------")
+            print("WAREHOUSE: %s pickups"%(Warehouses[i].warehouseName))
+            print("---------  - -------")
+            for x in Warehouses[i].leftItemsTrip:
+                for y in x.tripItems:
+                    print("Van picks-up item %s"%(y.itemNumber))
+            print("\nVan moves to warehouse D")
             deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[3])
 
 def displayWarehouses(Warehouses):
