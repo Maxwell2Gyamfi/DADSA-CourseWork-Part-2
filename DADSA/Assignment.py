@@ -15,6 +15,7 @@ class Warehouse(object):
         self.warehouseItems =[]
         self.warehouseShapes=[]
         self.garage =[]
+        self.leftItems = []
 
     def addItem(self,item,loadFromCsv):
 
@@ -545,8 +546,8 @@ def getWarehousePos(Warehouse,targetName):
 def task3(task3Warehouses):
 
     task3data = []
-    alltrips = []
-    global tripCount
+    trip = 0
+    deliveredItems = []
     van = Van(1500000000,2000)
     names = getWarehousesNames(task3Warehouses)
 
@@ -559,23 +560,31 @@ def task3(task3Warehouses):
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
+
         planTrip(i,i+1,task3data,task3Warehouses,van)
+        if trip%2!=0:
+            removeItemsSameDay(deliveredItems,task3Warehouses[i],van)
         if i > 0:
             print("Van picks other warehouses items from garage")
+
         print("\nVan moves to warehouse %s\n"%(names[i+1]))
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1])
-        deliverItems2(van.vanTrips,task3Warehouses[i+1])
+        deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1])
+        trip+=1
         van.resetVan()
 
 def deliverItems2(trips,selectedWarehouse):
+    deliveredItems =[]
     for i in trips:
         if i.targetWarehouse == selectedWarehouse.warehouseName:          
             for x in i.tripItems:
                 selectedWarehouse.addItem(x,False)
+                deliveredItems.append(x.itemNumber)
             break
     if selectedWarehouse.warehouseName !='D':
         print("Van leaves other warehouses items in garage")
     selectedWarehouse.garage.append(trips[1:])
+    return deliveredItems
 
 def deliverGarageItems(Warehouse,target):
     if len(Warehouse.garage) > 0:        
@@ -590,6 +599,18 @@ def deliverGarageItems(Warehouse,target):
    
     return
 
+def removeItemsSameDay(deliveredItems,targetWarehouse,van):
+   
+    dev = 0
+    for i in van.vanTrips:  
+       for x in range(0,len(i.tripItems)):         
+           if i.tripItems[x].itemNumber == deliveredItems[dev]:
+               print("Van drops item %s"%(deliveredItems[dev])) 
+               dev+=1
+               i.tripItems.pop(x) 
+               if x == len(deliveredItems):
+                   return
+                    
 
 def displayWarehouses(Warehouses):
     
