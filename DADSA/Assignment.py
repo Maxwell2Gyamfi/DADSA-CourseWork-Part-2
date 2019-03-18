@@ -129,6 +129,14 @@ class Warehouse(object):
         for i in self.warehouseItems:
             print(i)
 
+    def printGarage(self):
+        print("Item No.  Description                                   Price       Shape      Weigth(kg)")
+        print("--------  -----------                                   -----       -----      ------")
+        for i in self.garage:
+            for x in i:
+                for m in x.tripItems:
+                    print(m)
+
     def addShape(self,shapeName,weight,quantity):
         temp = itemShapes(shapeName,weight,quantity) 
         self.warehouseShapes.append(temp)
@@ -275,8 +283,9 @@ class Van():
     def printVanItems(self):
         print("\nItem No.  Description                                   Price       Shape      Weigth(kg)")
         print("--------  -----------                                   -----       -----      ------\n")
-        for i in self.vanItems:
-            print(i)
+        for i in self.vanTrips:
+            for x in i.tripItems:
+              print(x)
 
     def __str__(self):
          return "%s %s"%(self.remainingWeightCapacity,self.remainingInsurance)
@@ -402,24 +411,24 @@ def mainMenu():
 
 def menuSelection(menuChoice,Warehouses):
 
-        task1MenuSelection = 0
-        task1Warehouses = copy.deepcopy(Warehouses)
-        task2Warehouses = copy.deepcopy(Warehouses)
-        task3Warehouses = copy.deepcopy(Warehouses)
+                        
         task4Warehouses = copy.deepcopy(Warehouses)
 
 
-        if menuChoice ==1:             
+        if menuChoice ==1:
+            task1Warehouses = copy.deepcopy(Warehouses)
             task1(task1Warehouses)
             input("\nPress any key to continue")
             displayResults(task1Warehouses)
 
         elif menuChoice ==2:
+            task2Warehouses = copy.deepcopy(Warehouses)
             task2(task2Warehouses)
             input("\nPress any key to continue")
             displayResults(task1Warehouses)
 
         elif menuChoice ==3:
+            task3Warehouses = copy.deepcopy(Warehouses)
             task3(task3Warehouses)
             input("\nPress any key to continue")
             displayResults(task3Warehouses)
@@ -566,9 +575,7 @@ def task3(task3Warehouses):
         planTrip(i,i+1,task3data,task3Warehouses,van)
         if trip%2!=0:
             removeItemsSameDay(deliveredItems,task3Warehouses[i],van)
-        if i > 0:
-            print("Van picks other warehouses items from garage")
-        print("\nVan moves to warehouse %s\n"%(names[i+1]))
+        print("\n --> Van moves to warehouse %s\n"%(names[i+1]))     
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1],names[-1])
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1],names[-1])
         trip+=1
@@ -578,7 +585,6 @@ def task3(task3Warehouses):
     print("---  -")
     deliverLeftOvers(task3Warehouses)
 
-
 def deliverItems2(trips,selectedWarehouse,lastWarehouse):
     deliveredItems =[]
     for i in trips:
@@ -586,10 +592,11 @@ def deliverItems2(trips,selectedWarehouse,lastWarehouse):
             for x in i.tripItems:
                 selectedWarehouse.addItem(x,False)
                 deliveredItems.append(x.itemNumber)
-            break
-    if selectedWarehouse.warehouseName !=lastWarehouse:
-        print("Van leaves other warehouses items in garage")
+            break    
     selectedWarehouse.garage.append(trips[1:])
+    if selectedWarehouse.warehouseName !=lastWarehouse:
+        print("\n --> Following items left on the van: \n")
+        selectedWarehouse.printGarage()
     return deliveredItems
 
 def deliverGarageItems(Warehouse,target,lastWarehouse):
@@ -625,14 +632,14 @@ def removeItemsSameDay(deliveredItems,targetWarehouse,van):
 def deliverLeftOvers(Warehouses):
     for i in range(0,len(Warehouses)):
         if len(Warehouses[i].leftItemsTrip) > 0:
-            print("\nVan starts at Warehouse %s"%(Warehouses[i].warehouseName))
+            print("\n --> Van starts at Warehouse %s"%(Warehouses[i].warehouseName))
             print("---------  - -------")
             print("WAREHOUSE: %s pickups"%(Warehouses[i].warehouseName))
             print("---------  - -------")
             for x in Warehouses[i].leftItemsTrip:
                 for y in x.tripItems:
                     print("Van picks-up item %s"%(y.itemNumber))
-            print("\nVan moves to warehouse %s"%(x.targetWarehouse))
+            print("\n --> Van moves to warehouse %s\n"%(x.targetWarehouse))
             deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[3],Warehouses[-1].warehouseName)
 
 def displayWarehouses(Warehouses):
