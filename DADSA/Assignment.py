@@ -422,7 +422,7 @@ def menuSelection(menuChoice,Warehouses):
             task2Warehouses = copy.deepcopy(Warehouses)
             task2(task2Warehouses)
             input("\nPress any key to continue")
-            displayResults(task1Warehouses)
+            displayResults(task2Warehouses)
 
         elif menuChoice ==3:
             task3Warehouses = copy.deepcopy(Warehouses)
@@ -474,6 +474,7 @@ def task2(task2Warehouses):
     print("\n\n               DAYS TO RELOCATE TASK 2 ITEMS")
     print("               ------------------------------")
     task2data =[]
+    itemTypes = []
     loadcsv2('TASK 2(1).csv',task2data)
     global deliveryDays
 
@@ -484,7 +485,7 @@ def task2(task2Warehouses):
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
-        planTrip(i,i+1,task2data,task2Warehouses,van)      
+        tripPlan(i,i+1,task2data,task2Warehouses,van,itemTypes,False)      
         deliverItems(van,task2Warehouses,i+1)
         van.resetVan()
 
