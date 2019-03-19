@@ -90,7 +90,7 @@ class Warehouse(object):
               else : 
                 start = middle+1             
         else:        
-          print("An item with the id '%s' does not exits in the records."%itemNumber)       
+          #print("An item with the id '%s' does not exits in the records."%itemNumber)       
           return -1
 
     def moveItemtoVan(self,item,van,target):
@@ -412,9 +412,6 @@ def mainMenu():
 def menuSelection(menuChoice,Warehouses):
 
                         
-        task4Warehouses = copy.deepcopy(Warehouses)
-
-
         if menuChoice ==1:
             task1Warehouses = copy.deepcopy(Warehouses)
             task1(task1Warehouses)
@@ -432,6 +429,13 @@ def menuSelection(menuChoice,Warehouses):
             task3(task3Warehouses)
             input("\nPress any key to continue")
             displayResults(task3Warehouses)
+       
+        elif menuChoice ==4:
+            task4Warehouses = copy.deepcopy(Warehouses)
+            task4(task4Warehouses)
+            input("\nPress any key to continue")
+            displayResults(task4Warehouses)
+
 
         
         return menuChoice
@@ -485,36 +489,6 @@ def task2(task2Warehouses):
         van.resetVan()
 
     deliveryDays=0
-
-def planTrip(startPos,endPos,csvData,Warehouses,van):
-    global deliveryDays
-    flag =0
-    names = getWarehousesNames(Warehouses)
-
-    for x in range(startPos,len(names)-1):
-        trip = Trip(names[startPos],names[endPos])
-        for i in range(0,len(csvData)):
-
-            itemNumber = csvData[i][0]
-            fromWarehouse = csvData[i][1]
-            toWarehouse = csvData[i][2]
-
-            if fromWarehouse == names[startPos] and toWarehouse == names[endPos]:
-                originIndex = getWarehousePos(Warehouses,fromWarehouse)
-                targetIndex = getWarehousePos(Warehouses,toWarehouse)
-
-                item = createItem(Warehouses[originIndex],itemNumber)
-                if flag != targetIndex:                 
-                       fakeWarehouse = copy.deepcopy(Warehouses[targetIndex])
-                       flag = targetIndex
-                validItem = Warehouses[originIndex].moveItemtoVan(item,van,fakeWarehouse)
-                if validItem != None:
-                      trip.addItem(van,validItem)
-
-        endPos+=1
-        van.vanTrips.append(trip)
-
-    return
 
 def createItem(targetWarehouse,itemID):  
     i = targetWarehouse.binarySearch(0,len(targetWarehouse.warehouseItems)-1,itemID)
@@ -572,7 +546,7 @@ def task3(task3Warehouses):
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
 
-        planTrip(i,i+1,task3data,task3Warehouses,van)
+        tripPlan(i,i+1,task3data,task3Warehouses,van,deliveredItems,False)
         if trip%2!=0:
             removeItemsSameDay(deliveredItems,task3Warehouses[i],van)
         print("\n --> Van moves to warehouse %s\n"%(names[i+1]))     
@@ -580,10 +554,8 @@ def task3(task3Warehouses):
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1],names[-1])
         trip+=1
         van.resetVan()
-        
-    print("\nDay:",days+1)
-    print("---  -")
-    deliverLeftOvers(task3Warehouses)
+           
+    deliverLeftOvers(task3Warehouses,days)
 
 def deliverItems2(trips,selectedWarehouse,lastWarehouse):
     deliveredItems =[]
@@ -595,8 +567,11 @@ def deliverItems2(trips,selectedWarehouse,lastWarehouse):
             break    
     selectedWarehouse.garage.append(trips[1:])
     if selectedWarehouse.warehouseName !=lastWarehouse:
-        print("\n --> Following items left on the van: \n")
-        selectedWarehouse.printGarage()
+        for i in selectedWarehouse.garage:
+            for x in i:
+                if len(x.tripItems) > 0:
+                    print("\n --> Following items left on the van: \n")
+                    selectedWarehouse.printGarage()
     return deliveredItems
 
 def deliverGarageItems(Warehouse,target,lastWarehouse):
@@ -616,22 +591,25 @@ def removeItemsSameDay(deliveredItems,targetWarehouse,van):
     dev = 0
     leftItems =[]
 
-    for i in van.vanTrips:  
-       for x in range(0,len(i.tripItems)):         
-           if i.tripItems[x].itemNumber == deliveredItems[dev]:
-               print("Van drops item %s, same day delivery not allowed"%(deliveredItems[dev])) 
-               dev+=1
-               item = i.tripItems.pop(x)
-               leftItems.append(item)
-               if dev == len(deliveredItems):
-                   trip = Trip(i.startWarehouse,i.targetWarehouse)
-                   trip.tripItems.extend(leftItems)
-                   targetWarehouse.leftItemsTrip.append(trip)
-                   return
+    if len(deliveredItems) > 0:
+        for i in van.vanTrips:  
+           for x in range(0,len(i.tripItems)):         
+               if i.tripItems[x].itemNumber == deliveredItems[dev]:
+                   print("Van drops item %s, same day delivery not allowed"%(deliveredItems[dev])) 
+                   dev+=1
+                   item = i.tripItems.pop(x)
+                   leftItems.append(item)
+                   if dev == len(deliveredItems):
+                       trip = Trip(i.startWarehouse,i.targetWarehouse)
+                       trip.tripItems.extend(leftItems)
+                       targetWarehouse.leftItemsTrip.append(trip)
+                       return
                     
-def deliverLeftOvers(Warehouses):
+def deliverLeftOvers(Warehouses,days):
     for i in range(0,len(Warehouses)):
         if len(Warehouses[i].leftItemsTrip) > 0:
+            print("\nDay:",days+1)
+            print("---  -")
             print("\n --> Van starts at Warehouse %s"%(Warehouses[i].warehouseName))
             print("---------  - -------")
             print("WAREHOUSE: %s pickups"%(Warehouses[i].warehouseName))
@@ -642,6 +620,84 @@ def deliverLeftOvers(Warehouses):
             print("\n --> Van moves to warehouse %s\n"%(x.targetWarehouse))
             deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[3],Warehouses[-1].warehouseName)
 
+def task4(task4Warehouses):
+
+    deliveredItems = []
+    task4data = []
+    itemTypes =['Rectangle','Pyramid','Sphere','Square']
+    trip = 0
+    days =0    
+    van = Van(1500000000,2000)
+    names = getWarehousesNames(task4Warehouses)
+
+    os.system('cls')
+    print("          TASK 4")
+    print("          ------\n")
+    loadcsv2("TASK 3.csv",task4data)
+
+    for x in range(0,len(itemTypes)):     
+        print("\n---------------------------")
+        print(" --> %s PICK-UPS"%(itemTypes[x].upper()))
+        print("---------------------------")
+        for i in range(0,len(names)-1): 
+            if trip%2==0:
+                days+=1
+                print("\nDay:",days)
+                print("---  -")
+            print("\n---------  - -------")
+            print("WAREHOUSE: %s pickups"%(names[i]))
+            print("---------  - -------")
+            tripPlan(i,i+1,task4data,task4Warehouses,van,itemTypes[x],True)
+            if trip%2!=0:
+                removeItemsSameDay(deliveredItems,task4Warehouses[i],van)
+            print("\n --> Van moves to warehouse %s\n"%(names[i+1]))     
+            deliverGarageItems(task4Warehouses[i],task4Warehouses[i+1],names[-1])
+            deliveredItems = deliverItems2(van.vanTrips,task4Warehouses[i+1],names[-1])
+            trip+=1
+            van.resetVan()
+            
+        deliverLeftOvers(task4Warehouses,days)
+        emptyWarehouse(task4Warehouses)
+        
+
+def tripPlan(startPos,endPos,csvData,Warehouses,van,itemTypes,task4):
+
+    global deliveryDays
+    flag =0
+    names = getWarehousesNames(Warehouses)
+
+    for x in range(startPos,len(names)-1):
+        trip = Trip(names[startPos],names[endPos])
+        for i in range(0,len(csvData)):
+                itemNumber = csvData[i][0]
+                fromWarehouse = csvData[i][1]
+                toWarehouse = csvData[i][2]             
+                if fromWarehouse == names[startPos] and toWarehouse == names[endPos]:
+                    originIndex = getWarehousePos(Warehouses,fromWarehouse)
+                    targetIndex = getWarehousePos(Warehouses,toWarehouse)
+                    item = createItem(Warehouses[originIndex],itemNumber)
+                    if flag != targetIndex:                 
+                           fakeWarehouse = copy.deepcopy(Warehouses[targetIndex])
+                           flag = targetIndex
+
+                    if task4 == True:
+                        if item.itemShape == itemTypes:
+                            validItem = Warehouses[originIndex].moveItemtoVan(item,van,fakeWarehouse)
+                            if validItem != None:                      
+                               trip.addItem(van,validItem)
+                    else: 
+                        validItem = Warehouses[originIndex].moveItemtoVan(item,van,fakeWarehouse)
+                        if validItem != None:                      
+                           trip.addItem(van,validItem)
+
+        endPos+=1
+        van.vanTrips.append(trip)
+
+def emptyWarehouse(Warehouses):
+    for i in range(0,len(Warehouses)):
+        Warehouses[i].garage =[]
+        Warehouses[i].leftItemsTrip =[]
+        
 def displayWarehouses(Warehouses):
     
     os.system('cls')
