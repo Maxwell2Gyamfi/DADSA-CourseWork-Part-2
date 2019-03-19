@@ -635,15 +635,15 @@ def task4(task4Warehouses):
     print("          ------\n")
     loadcsv2("TASK 3.csv",task4data)
 
-    for x in range(0,len(itemTypes)):     
-        print("\n---------------------------")
-        print(" --> %s PICK-UPS"%(itemTypes[x].upper()))
-        print("---------------------------")
-        for i in range(0,len(names)-1): 
-            if trip%2==0:
+    for x in range(0,len(itemTypes)):
+        if trip%2==0:
                 days+=1
                 print("\nDay:",days)
                 print("---  -")
+        print("\n---------------------------")
+        print("%s PICK-UPS"%(itemTypes[x].upper()))
+        print("---------------------------")
+        for i in range(0,len(names)-1):
             print("\n---------  - -------")
             print("WAREHOUSE: %s pickups"%(names[i]))
             print("---------  - -------")
@@ -653,7 +653,8 @@ def task4(task4Warehouses):
             print("\n --> Van moves to warehouse %s\n"%(names[i+1]))     
             deliverGarageItems(task4Warehouses[i],task4Warehouses[i+1],names[-1])
             deliveredItems = deliverItems2(van.vanTrips,task4Warehouses[i+1],names[-1])
-            trip+=1
+            if len(deliveredItems) > 0:
+                trip+=1
             van.resetVan()
             
         deliverLeftOvers(task4Warehouses,days)
