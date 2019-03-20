@@ -24,6 +24,9 @@
     <Compile Include="Assignment.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="coursework.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DADSA_CODE.py" />
     <Compile Include="DADSA_Part2.py">
       <SubType>Code</SubType>
