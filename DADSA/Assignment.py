@@ -836,7 +836,7 @@ def deliverGarageItems(Warehouse,target,lastWarehouse):
 Function name: deliverGarageItems(Warehouse,target,lastWarehouse)
 --> This function prevents items from being delivered twice in a single day
 --> It compares the item number 
-
+'''
 def removeItemsSameDay(deliveredItems,targetWarehouse,van):
    
     dev = 0
