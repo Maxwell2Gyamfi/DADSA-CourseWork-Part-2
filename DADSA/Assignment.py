@@ -19,7 +19,7 @@ class Warehouse(object):
         self.remainingInsurance = remainingInsurance
         self.warehouseItems =[]
         self.warehouseShapes=[]
-        self.garage =[]
+        self.overnightSpace =[]
         self.leftItemsTrip = []
 
     ''' 
@@ -184,7 +184,7 @@ class Warehouse(object):
     def printGarage(self):
         print("Item No.  Description                                   Price       Shape      Weigth(kg)")
         print("--------  -----------                                   -----       -----      ------")
-        for i in self.garage:
+        for i in self.overnightSpace:
             for x in i:#prints item
                 for m in x.tripItems:
                     print(m)
@@ -773,7 +773,7 @@ def task3(task3Warehouses):
             removeItemsSameDay(deliveredItems,task3Warehouses[i],van)
         print("\n --> Van moves to warehouse %s\n"%(names[i+1]))
         #delivers items left overnight
-        deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1],names[-1])
+        deliverOvernightItems(task3Warehouses[i],task3Warehouses[i+1],names[-1])
         #keeps record of delivered items
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1],names[-1])
         trip+=1
@@ -800,9 +800,9 @@ def deliverItems2(trips,selectedWarehouse,lastWarehouse):
                 deliveredItems.append(x.itemNumber)
             break   
     #adds remaining trips tp target warehouse    
-    selectedWarehouse.garage.append(trips[1:])
+    selectedWarehouse.overnightSpace.append(trips[1:])
     if selectedWarehouse.warehouseName !=lastWarehouse:
-        for i in selectedWarehouse.garage:
+        for i in selectedWarehouse.overnightSpace:
             for x in i:
                 if len(x.tripItems) > 0:
                     flag = True
@@ -812,28 +812,28 @@ def deliverItems2(trips,selectedWarehouse,lastWarehouse):
     return deliveredItems
 
 '''
-Function name: deliverGarageItems(Warehouse,target,lastWarehouse)
+Function name: deliverOvernightItems(Warehouse,target,lastWarehouse)
 --> This function delivers items which were left on the van overnight in the garage
 --> It compares the target warehouse of trips to target selected warehouse and if 
     there's a match it adds item to selected target warehouse
 --> It then adds the remaining items from overnight to the target warehouse
 '''
-def deliverGarageItems(Warehouse,target,lastWarehouse):
-    if len(Warehouse.garage) > 0: 
+def deliverOvernightItems(Warehouse,target,lastWarehouse):
+    if len(Warehouse.overnightSpace) > 0: 
         #checks lenght of items left behind
-        for i in range(0,len(Warehouse.garage)):
+        for i in range(0,len(Warehouse.overnightSpace)):
             #compares trip target warehouse with target warehouse
-            if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:               
-               for x in Warehouse.garage[i][0].tripItems:
+            if Warehouse.overnightSpace[i][0].targetWarehouse == target.warehouseName:               
+               for x in Warehouse.overnightSpace[i][0].tripItems:
                     target.addItem(x,False)#adds item to target      
                if target.warehouseName !=lastWarehouse:
-                    del Warehouse.garage[i][0]#delete delivered items from overnight                 
-                    target.garage.extend(Warehouse.garage)
+                    del Warehouse.overnightSpace[i][0]#delete delivered items from overnight                 
+                    target.overnightSpace.extend(Warehouse.overnightSpace)
                     break   
     return
 
 '''
-Function name: deliverGarageItems(Warehouse,target,lastWarehouse)
+Function name: removeItemsSameDay(deliveredItems,targetWarehouse,van)
 --> This function prevents items from being delivered twice in a single day
 --> It compares the item number 
 '''
@@ -855,10 +855,17 @@ def removeItemsSameDay(deliveredItems,targetWarehouse,van):
                        trip.tripItems.extend(leftItems)
                        targetWarehouse.leftItemsTrip.append(trip)
                        return
-                    
+'''
+Function name: deliverLeftOvers(Warehouses)
+--> This function delivers the items which could not be moved twice 
+    in the days to the appropriate warehouses
+--> It checks if there are leffovers, it picks-up leftover item
+    and moves to the target location and delivers items
+'''                    
 def deliverLeftOvers(Warehouses):
     global totaldays
     for i in range(0,len(Warehouses)):
+        #checks if any leftovers
         if len(Warehouses[i].leftItemsTrip) > 0:
             totaldays+=1
             print("\nDay:",totaldays)
@@ -870,24 +877,38 @@ def deliverLeftOvers(Warehouses):
             for x in Warehouses[i].leftItemsTrip:
                 for y in x.tripItems:
                     print("Van picks-up item %s"%(y.itemNumber))
+            #moves to target warehouse and delivers items
             print("\n --> Van moves to warehouse %s\n"%(x.targetWarehouse))
             position = getWarehousePos(Warehouses,x.targetWarehouse)            
             deliverItems2(Warehouses[i].leftItemsTrip,Warehouses[position],Warehouses[-1].warehouseName)
 
+
+'''
+Function name: task4(task4Warehouses)
+--> This function draws the plan for items that are to be moved in task 3
+    csv file for task 4 
+--> It first read the movements into an empty list
+--> It plans the trip by taking the first warehouse and its nearest neighbour
+--> It collects all the items by shape that are to be delivered to neighbours 
+    and delivers them in 2 trips. Two trips makes up a day.
+--> It records the information of the items delivered to prevent items for moving into 2 
+    different warehouses on the same day
+'''
 def task4(task4Warehouses):
+    #local variables
     global totaldays
     deliveredItems = []
     task4data = []
     itemTypes =['Rectangle','Pyramid','Sphere','Square']
     trip = 0
     days =0    
-    van = Van(1500000000,2000)
-    names = getWarehousesNames(task4Warehouses)
+    van = Van(1500000000,2000)#van object
+    names = getWarehousesNames(task4Warehouses)#collect warehouses names
 
     os.system('cls')
     print("          TASK 4")
     print("          ------\n")
-    loadcsv2("TASK 3.csv",task4data)
+    loadcsv2("TASK 3.csv",task4data)#load csv
 
     for x in range(0,len(itemTypes)): 
         totaldays+=1
@@ -895,59 +916,84 @@ def task4(task4Warehouses):
         print("--- -")      
         print("%s PICK-UPS"%(itemTypes[x].upper()))              
         for i in range(0,len(names)-1):
-            if trip%2==0:
+            if trip%2==0:#starts new day if remainder is 0
                     print("---------  - -------")                    
                     print("WAREHOUSE: %s pickups"%(names[i]))
-                    print("---------  - -------")       
+                    print("---------  - -------") 
+            #plans route by item shape        
             tripPlan(i,i+1,task4data,task4Warehouses,van,itemTypes[x],True)
             if trip%2!=0:
                 removeItemsSameDay(deliveredItems,task4Warehouses[i],van)
-            print("\n --> Warehouse %s\n"%(names[i+1]))     
-            deliverGarageItems(task4Warehouses[i],task4Warehouses[i+1],names[-1])
+            print("\n --> Warehouse %s\n"%(names[i+1])) 
+            #deliver items left overnight
+            deliverOvernightItems(task4Warehouses[i],task4Warehouses[i+1],names[-1])
+            #delivers and keeps record of items delivered in a trip
             deliveredItems = deliverItems2(van.vanTrips,task4Warehouses[i+1],names[-1])
             if len(deliveredItems) > 0:
                 trip+=1
             van.resetVan()
-            
+        #delivers same day delivery items     
         deliverLeftOvers(task4Warehouses)
         emptyWarehouse(task4Warehouses)     
         
 
+'''
+Function name: tripPlan(startPos,endPos,csvData,Warehouses,van,itemTypes,task4)
+--> This plans the route of items to be moved from one warehouse to another
+--> It creates a trip for every new end position and appends item to be the
+    moved to the trip's warehouse item list
+'''
 def tripPlan(startPos,endPos,csvData,Warehouses,van,itemTypes,task4):
 
     global deliveryDays
     flag =0
-    names = getWarehousesNames(Warehouses)
+    names = getWarehousesNames(Warehouses)#gets warehouses names
 
     for x in range(startPos,len(names)-1):
+        #creates trip object with starting and ending warehouse
         trip = Trip(names[startPos],names[endPos])
         for i in range(0,len(csvData)):
+                '''read csv to variables '''
                 itemNumber = csvData[i][0]
                 fromWarehouse = csvData[i][1]
                 toWarehouse = csvData[i][2]             
-                if fromWarehouse == names[startPos] and toWarehouse == names[endPos]:                    
+                if fromWarehouse == names[startPos] and toWarehouse == names[endPos]:   
+                    #creates item object
                     item = createItem(Warehouses[startPos],itemNumber)
+                    #creats a copy of current warehouse to compare items to be added values
                     if flag != endPos:                 
                            fakeWarehouse = copy.deepcopy(Warehouses[endPos])
                            flag = endPos
                     if task4 == True:
+                        #delivers items by shape if task 4 is true
                         if item.itemShape == itemTypes:
                             validItem = Warehouses[startPos].moveItemtoVan(item,van,fakeWarehouse)
                             if validItem != None:                      
                                trip.addItem(van,validItem)
-                    else: 
+                    else:
+                        #adds selected item to trip if valid
                         validItem = Warehouses[startPos].moveItemtoVan(item,van,fakeWarehouse)
                         if validItem != None:                      
                            trip.addItem(van,validItem)
-
+        #increment end position
         endPos+=1
+        #add trip to van
         van.vanTrips.append(trip)
 
+'''
+Function name: emptyWarehouse(Warehouses)
+--> This function resets the van attributes to avoid duplicates for each
+    target warehouse
+'''
 def emptyWarehouse(Warehouses):
     for i in range(0,len(Warehouses)):
-        Warehouses[i].garage =[]
+        Warehouses[i].overnightSpace =[]
         Warehouses[i].leftItemsTrip =[]
-        
+
+'''
+Function name: emptyWarehouse(Warehouses)
+--> This function displays the warehouses to be selected 
+'''        
 def displayWarehouses(Warehouses):
     
     os.system('cls')
@@ -961,6 +1007,10 @@ def displayWarehouses(Warehouses):
     print("5 --> Quit")
     print("\nSelect choice(1-5): ")
 
+'''
+Function name: allWarehousesDetails(Warehouses)
+--> This function displays the details of all the warehouses in the system
+''' 
 def allWarehousesDetails(Warehouses):
 
         print("\nWAREHOUSES INFORMATION: ")
@@ -976,11 +1026,19 @@ def allWarehousesDetails(Warehouses):
                    Warehouses[i].warehouseShapes))
         print("\n")
 
-def displayResults(Warehouses):
 
+
+'''
+Function name:  displayResults(Warehouses)
+--> This function displays a warehouse
+--> It repeats until user decides to quit
+''' 
+def displayResults(Warehouses):
+      
+      #displays until choice is N
       displayAnother ='Y'
       while displayAnother =='Y':
-              displayWarehouses(Warehouses)
+              displayWarehouses(Warehouses)#displays warehouses selection
               warehouseChoice = getValidInteger(1,5)
               if warehouseChoice == 5:
                  break
@@ -989,27 +1047,41 @@ def displayResults(Warehouses):
                  print("\nDisplay another warehouse?(Y/N): ")
                  displayAnother = getValidYesOrNo()
 
+'''
+Function Name: getValidYesOrNo()
+  --> Prompts user to input a choice which is either Y or N
+  --> Display error message if incorrect character is inputted
+'''
 def getValidYesOrNo():
 
     flag =True
     while flag:
+        #prompts user to input Y or N
         yes_or_no = input(" ")
         if yes_or_no.upper() == 'Y' or yes_or_no.upper() == 'N':
            return yes_or_no.upper()
         else:
           print("Wrong input,enter Y OR N: ")
 
+'''
+Function Name: getValidInteger(minimum,maximum)
+
+  --> Prompts user to input a valid integer value.
+  --> It then check the maximum and minimum values.
+'''
 def getValidInteger(minimum,maximum):
 
         flag =True
         while flag == True:
              number= input("")   
              try:
+                  #checks if input is valid integer
                 if number.isdigit:
                    number = int(number)
              except ValueError:
                    print('You didnt input an input an integer,try again: (%d-%d))' % (minimum,maximum))
-             else:           
+             else:   
+                  #checks if input is out of range
                  if number < minimum or number >maximum:
                     print('The entered number is out of range, try again: (%d-%d))' % (minimum,maximum))
                  else:
