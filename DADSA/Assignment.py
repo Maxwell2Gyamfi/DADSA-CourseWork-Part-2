@@ -10,8 +10,6 @@ totaldays = 0
 
 class Warehouse(object):
 
-    overallInsurance =8000000000
-
     #default constructor
     def __init__(self,warehouseName=None,remainingInsurance=None):
         #class variables
@@ -91,7 +89,6 @@ class Warehouse(object):
         print("  ---> Warehouse Name : %s"%self.warehouseName)
         print("  ---> Total elements : %s"%len(self.warehouseItems))
         print("  ---> Remaining Insurance: £%s"%(self.remainingInsurance))
-        print("  ---> Remaining Overall Warehouse Insurance: £%s"%(Warehouse.overallInsurance))
         print("  ---> Available Shapes: %s"%(self.warehouseShapes))
         self.warehouseItems = self.insertionSort()#sorts warehouse item with insertion
         self.printWarehouseItems()#prints warehouse items
@@ -223,7 +220,7 @@ class Warehouse(object):
     '''
     def increaseWarehouseInsurance(self,amount):
         self.remainingInsurance+=amount
-        Warehouse.overallInsurance+=amount
+      
     
     '''
     Method name: decreaseWarehouseInsurance(self,amount)
@@ -231,7 +228,7 @@ class Warehouse(object):
     '''
     def decreaseWarehouseInsurance(self,amount):
         self.remainingInsurance-=amount
-        Warehouse.overallInsurance-=amount
+      
     
     '''
     Method name: getWarehouseName(self)
@@ -646,7 +643,10 @@ def menuSelection(menuChoice,Warehouses):
 Function name: task1(task1Warehouses)
 --> This function loads task 1 csv items through warehouse A
 '''
-def task1(task1Warehouses):    
+def task1(task1Warehouses): 
+    os.system("cls")
+    print("\n\n    LOAD ITEMS THROUGH WAREHOUSE A")
+    print("    ------------------------------\n")
     loadcsv('DATA TO INSERT INTO WAREHOUSE A.csv',task1Warehouses,4,True)
 
 '''
