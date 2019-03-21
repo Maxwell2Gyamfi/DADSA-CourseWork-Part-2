@@ -1,7 +1,10 @@
+#python libraries
 import csv
 import os
 import pickle
 import copy
+
+#global variables
 deliveryDays =0
 totaldays = 0
 
@@ -447,7 +450,7 @@ class Trip():
     def __repr__(self):
         return "%s %s"%(self.startWarehouse,self.targetWarehouse)
 '''
-Method name: main()
+Function name: main()
 --> This function contains the main menu of the program
 --> It creates warehouses and loads csv file to them
 --> It repeats until user decides to quit program
@@ -469,8 +472,8 @@ def main():
     return
 
 '''
-Method name: createWarehouses()
---> This method creates 4 warehouses starting from letter A
+Function name: createWarehouses()
+--> This function creates 4 warehouses starting from letter A
 --> It then sets up shapes for each warehouse
 --> It then returns a list of warehouses created
 '''
@@ -488,7 +491,7 @@ def createWarehouses():
     return Warehouses
 
 '''
-Method name: setupItemShapes(Warehouses)
+Function name: setupItemShapes(Warehouses)
 --> This function setups appropriate shapes for each warehouse
 '''
 def setupItemShapes(Warehouses):
@@ -504,7 +507,7 @@ def setupItemShapes(Warehouses):
       setShapesValues(warehouseShapes[i],Warehouses[i])
 
 '''
-Method name: setShapesValues(warehouse,selectedWarehouse)
+Function name: setShapesValues(warehouse,selectedWarehouse)
 --> This fuctions sets up warehouse shapes for each warehouse
 --> It adds shapes to warehouse by calling the method addshape in Warehouse class
 '''
@@ -524,7 +527,7 @@ def setShapesValues(warehouse,selectedWarehouse):
     return
 
 '''
-Method name: readcsvFiletoWarehouse(Warehouses)
+Function name: readcsvFiletoWarehouse(Warehouses)
 --> This fuctions loads csvs file data into warehouse depending on the index
 '''
 def readcsvFiletoWarehouse(Warehouses):
@@ -535,7 +538,7 @@ def readcsvFiletoWarehouse(Warehouses):
     loadcsv('Warehouse D.csv',Warehouses,3,False)
 
 '''
-Method name: loadcsv(csvFilename,Warehouses,index,task1)
+Function name: loadcsv(csvFilename,Warehouses,index,task1)
 --> This fuctions reads csvs file data into warehouse depending on the index
 --> If task 1 is true it adds an item to warehouse based on the index value
 --> If task 1 is false it tries to add item to warehouse,
@@ -565,15 +568,19 @@ def loadcsv(csvFilename,Warehouses,index,task1):
     except FileNotFoundError:
           print(FileNotFoundError)
     return
+
 '''
-Method name: loadcsv2(csvFilename,task2data)
+Function name: loadcsv2(csvFilename,task2data)
+--> This function opens a csv file and appends data read into a list
+    which will contain all the data read
 '''
 def loadcsv2(csvFilename,task2data):        
     try:
-        with open(csvFilename) as csvFile:
+        with open(csvFilename) as csvFile:#open csv file
                   reader = csv.reader(csvFile)
-                  next(reader,None)
+                  next(reader,None)#skip header
                   for itemNumber,selectedWarehouse,targetWarehouse in reader:
+                      #append data read to list
                       temp =[]
                       itemNumber = int(itemNumber)
                       temp.append(itemNumber)
@@ -585,7 +592,10 @@ def loadcsv2(csvFilename,task2data):
           print(FileNotFoundError)
     return
 
-
+'''
+Function name: mainMenu()
+--> This function displays the main menu of the program
+'''
 def mainMenu():
 
     os.system('cls')
@@ -598,13 +608,19 @@ def mainMenu():
     print("     5 --> Quit")
     print("\nSelect task(1-5): ")
 
+'''
+Function name: menuSelection(menuChoice,Warehouses)
+--> This function selects menu option based on user input
+--> It deep copies default warehouses values every time for a fresh start
+--> It then displays the final changes made by each task selection
+'''
 def menuSelection(menuChoice,Warehouses):
                              
         if menuChoice ==1:
-            task1Warehouses = copy.deepcopy(Warehouses)
+            task1Warehouses = copy.deepcopy(Warehouses)#deep copy default warehouses
             task1(task1Warehouses)
             input("\nPress any key to continue")
-            displayResults(task1Warehouses)
+            displayResults(task1Warehouses)#displays final changes
 
         elif menuChoice ==2:
             task2Warehouses = copy.deepcopy(Warehouses)
@@ -626,73 +642,116 @@ def menuSelection(menuChoice,Warehouses):
      
         return menuChoice
 
-def task1(task1Warehouses):
-    
+'''
+Function name: task1(task1Warehouses)
+--> This function loads task 1 csv items through warehouse A
+'''
+def task1(task1Warehouses):    
     loadcsv('DATA TO INSERT INTO WAREHOUSE A.csv',task1Warehouses,4,True)
 
+'''
+Function name: task2(task2Warehouses)
+--> This calculates days required to relocate task 2 items 
+--> It first read task 2 data
+--> It gets the names of the warehouses and draws plan by taking a warehouse
+    and its nearest neighbour
+--> It then delivers items on the van to target warehouses
+'''
 def task2(task2Warehouses):    
     os.system('cls')
     print("\n\n               DAYS TO RELOCATE TASK 2 ITEMS")
     print("               ------------------------------")
     task2data =[]
     itemTypes = []
-    loadcsv2('TASK 2(1).csv',task2data)
+    loadcsv2('TASK 2(1).csv',task2data)#reads movement from csv data
     global deliveryDays
 
-    van  = Van(1500000000,2000)
-    names = getWarehousesNames(task2Warehouses)
+    van  = Van(1500000000,2000)#creates van object
+    names = getWarehousesNames(task2Warehouses)#gets warehouses names
 
     for i in range(0,len(names)-1):
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
-        tripPlan(i,i+1,task2data,task2Warehouses,van,itemTypes,False)      
-        deliverItems(van,task2Warehouses,i+1)
-        van.resetVan()
+        tripPlan(i,i+1,task2data,task2Warehouses,van,itemTypes,False)#draws plan for moving items   
+        deliverItems(van,task2Warehouses,i+1)#delivers items on the van
+        van.resetVan()#resets van
 
     deliveryDays=0
 
+'''
+Function name: createItem(targetWarehouse,itemID)
+--> This function returns an item by searching it through binary search method
+    designed in the warehouse class
+--> It searches the item by using the item id
+'''
 def createItem(targetWarehouse,itemID):  
+    #gets position of item
     i = targetWarehouse.binarySearch(0,len(targetWarehouse.warehouseItems)-1,itemID)
     item = targetWarehouse.warehouseItems[i]
     return item
 
+'''
+Function name: deliverItems(van,Warehouses,position)
+--> This function delivers items on the van to destination warehouses
+--> If a delivery is to be made it increments delivvery days by 1
+'''
 def deliverItems(van,Warehouses,position):
     global deliveryDays
-    names = getWarehousesNames(Warehouses)
+    names = getWarehousesNames(Warehouses)#gets warehouses name
     for i in range (0,len(van.vanTrips)):
-        if van.vanTrips[i].targetWarehouse == names[position]:
+        if van.vanTrips[i].targetWarehouse == names[position]:#compares targets name
             if len(van.vanTrips[i].tripItems) > 0:
                 deliveryDays+=1
                 print("\nDay: %s"%(deliveryDays))
                 print("---  -")
                 for x in van.vanTrips[i].tripItems:
-                    Warehouses[position].addItem(x,False)  
+                    Warehouses[position].addItem(x,False)  #adds item to warehouse
         position+=1
         
     return
 
+'''
+Function name: getWarehousesNames(Warehouses)
+--> This function returns the names of all the warehouses
+'''
 def getWarehousesNames(Warehouses):
     names =[]
     for i in Warehouses:
-        names.append(i.warehouseName)
+        names.append(i.warehouseName)#appends warehouses names
     return names
 
+'''
+Function name: getWarehousesNames(Warehouses)
+--> This function returns the position of a warehouse based on warehouse name
+'''
 def getWarehousePos(Warehouse,targetName):
-
+    #loops and compares warehouses name to targetname
     for i in range(0,len(Warehouse)):
         if Warehouse[i].warehouseName == targetName:
            break
-    return i
+    return i#returns position
 
+'''
+Function name: task3(task3Warehouses)
+--> This function draws the plan for items that are to be moved in task 3
+    csv file
+--> It first read the movements into an empty list
+--> It plans the trip by taking the first warehouse and its nearest neighbour
+--> It collects all the items to be delivered to neighbours and delivers them in 2 trips
+    Two trips makes up a day.
+--> It records the information of the items delivered to prevent items for moving into 2 
+    different warehouses on the same day
+'''
 def task3(task3Warehouses):
 
+    #local variables
     global totaldays
     deliveredItems = []
     task3data = []
     trip = 0       
-    van = Van(1500000000,2000)
-    names = getWarehousesNames(task3Warehouses)
+    van = Van(1500000000,2000)#van object
+    names = getWarehousesNames(task3Warehouses)#gets warehouses name
 
     os.system('cls')
     print("          TASK 3")
@@ -701,33 +760,46 @@ def task3(task3Warehouses):
 
     for i in range(0,len(names)-1): 
         if trip%2==0:
-            totaldays+=1
+            totaldays+=1#incremenst day if remainder of trip is 0
             print("\nDay:",totaldays)
             print("---  -")
         print("\n---------  - -------")
         print("WAREHOUSE: %s pickups"%(names[i]))
         print("---------  - -------")
-
+        #plan trip by taking index of i in warehouse names and nearest neighbour
         tripPlan(i,i+1,task3data,task3Warehouses,van,deliveredItems,False)
         if trip%2!=0:
+            #prevents items from being moved twice in a day
             removeItemsSameDay(deliveredItems,task3Warehouses[i],van)
-        print("\n --> Van moves to warehouse %s\n"%(names[i+1]))     
+        print("\n --> Van moves to warehouse %s\n"%(names[i+1]))
+        #delivers items left overnight
         deliverGarageItems(task3Warehouses[i],task3Warehouses[i+1],names[-1])
+        #keeps record of delivered items
         deliveredItems = deliverItems2(van.vanTrips,task3Warehouses[i+1],names[-1])
         trip+=1
         van.resetVan()
-           
+    
+    #deliver items which can not be deliverd twice a day    
     deliverLeftOvers(task3Warehouses)
 
+
+'''
+Function name: deliverItems2(trips,selectedWarehouse,lastWarehouse)
+--> This function adds trips items to target warehouses
+--> It then adds the rest of trip items to the target warehouse
+    so they can delivered on the next delivery
+'''
 def deliverItems2(trips,selectedWarehouse,lastWarehouse):
     deliveredItems =[]
     flag = False
     for i in trips:
+        #delivers items to target Warehouse
         if i.targetWarehouse == selectedWarehouse.warehouseName:          
             for x in i.tripItems:
                 selectedWarehouse.addItem(x,False)
                 deliveredItems.append(x.itemNumber)
-            break    
+            break   
+    #adds remaining trips tp target warehouse    
     selectedWarehouse.garage.append(trips[1:])
     if selectedWarehouse.warehouseName !=lastWarehouse:
         for i in selectedWarehouse.garage:
@@ -739,17 +811,31 @@ def deliverItems2(trips,selectedWarehouse,lastWarehouse):
          selectedWarehouse.printGarage()               
     return deliveredItems
 
+'''
+Function name: deliverGarageItems(Warehouse,target,lastWarehouse)
+--> This function delivers items which were left on the van overnight in the garage
+--> It compares the target warehouse of trips to target selected warehouse and if 
+    there's a match it adds item to selected target warehouse
+--> It then adds the remaining items from overnight to the target warehouse
+'''
 def deliverGarageItems(Warehouse,target,lastWarehouse):
-    if len(Warehouse.garage) > 0:        
+    if len(Warehouse.garage) > 0: 
+        #checks lenght of items left behind
         for i in range(0,len(Warehouse.garage)):
+            #compares trip target warehouse with target warehouse
             if Warehouse.garage[i][0].targetWarehouse == target.warehouseName:               
                for x in Warehouse.garage[i][0].tripItems:
-                    target.addItem(x,False)         
+                    target.addItem(x,False)#adds item to target      
                if target.warehouseName !=lastWarehouse:
-                    del Warehouse.garage[i][0]                   
+                    del Warehouse.garage[i][0]#delete delivered items from overnight                 
                     target.garage.extend(Warehouse.garage)
                     break   
     return
+
+'''
+Function name: deliverGarageItems(Warehouse,target,lastWarehouse)
+--> This function prevents items from being delivered twice in a single day
+--> It compares the item number 
 
 def removeItemsSameDay(deliveredItems,targetWarehouse,van):
    
